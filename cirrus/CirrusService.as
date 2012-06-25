@@ -445,6 +445,7 @@
 
 			incomingStream.client = new CirrusClient();
 
+			// コールが承諾された時に、発信者が着信者のビデオを見れる準備
 			remoteVideo = new Video();
 			remoteVideo.width = 320;
 			remoteVideo.height = 240;
