@@ -448,7 +448,6 @@
 			remoteVideo.width = 320;
 			remoteVideo.height = 240;
 			remoteVideo.attachNetStream(incomingStream);
-//			remoteVideoDisplay.addChild(remoteVideo);
 
 			remoteName = user;
 			remoteId = identity;
@@ -502,7 +501,6 @@
 			remoteVideo.width = 320;
 			remoteVideo.height = 240;
 			remoteVideo.attachNetStream( incomingStream );
-//			remoteVideoDisplay.addChild( remoteVideo );
 
 			// 着呼側のメディアをパブリッシュ
 			outgoingStream = new NetStream( netConnection, NetStream.DIRECT_CONNECTIONS );
