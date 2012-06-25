@@ -19,6 +19,12 @@
 		public var callAccepted_sig:Signal = new Signal();// 通話が承諾されました。
 		public var talkTerminated_sig:Signal = new Signal();// 相手に切断されました。
 		public var talkStarted_sig:Signal = new Signal();// 会話が開始しました
+
+		// 通話を誘ったほうがホスト、誘われたほうがゲスト
+		private var _isHost:Boolean = false;
+		public function get isHost():Boolean{
+			return _isHost;
+		}
 		
 
 		public var userName_str:String = "";
@@ -465,6 +471,7 @@
 
 			_currentState = CallCalling;
 			dispatchEvent( new CirrusEvent(CirrusEvent.CALLING_STARTED) );
+			_isHost = true;
 		}
 
 
