@@ -887,7 +887,7 @@ import org.osflash.signals.*;
 
 class CirrusClient extends EventDispatcher{
 
-	public var action_sig:Signal;
+	public var action_sig:Signal = new Signal( Array );
 
 
 	public function handleRemoteMouseEvent( obj:Object ):void{
@@ -902,10 +902,9 @@ class CirrusClient extends EventDispatcher{
 		dispatchEvent( event );
 	}
 
-	public function handleRemoteAction( args ):void{
-		Logger.info( ObjectUtil.toString(args) );
+	public function handleRemoteAction( args:Array ):void{
+		//Logger.info( ObjectUtil.toString(args) );
 		action_sig.dispatch( args );
-
 	}
 
 }
