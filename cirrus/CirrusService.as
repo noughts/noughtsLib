@@ -16,6 +16,7 @@
 		// signals
 		public var loginComplete_sig:Signal = new Signal();
 		public var incomingCall_sig:Signal = new Signal();
+		public var callAccepted_sig:Signal = new Signal();// 通話が承諾されました。
 		
 
 		public var userName_str:String = "";
@@ -325,6 +326,7 @@
 					}
 					status( "通話を承諾されました。" );
 					_currentState = CALL_ESTABLISHED;
+					callAccepted_sig.dispatch();
 					dispatchEvent( new CirrusEvent(CirrusEvent.CALL_ACCEPTED) );
 					dispatchEvent( new CirrusEvent(CirrusEvent.TALK_STARTED) );
 				} else if( Bye == action ){
