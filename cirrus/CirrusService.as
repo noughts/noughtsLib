@@ -17,6 +17,7 @@
 		public var loginComplete_sig:Signal = new Signal();
 		public var incomingCall_sig:Signal = new Signal();
 		public var callAccepted_sig:Signal = new Signal();// 通話が承諾されました。
+		public var talkTerminated_sig:Signal = new Signal();// 相手に切断されました。
 		
 
 		public var userName_str:String = "";
@@ -137,17 +138,16 @@
 			mic = Microphone.getEnhancedMicrophone();
 			if( mic ){
 				Logger.info( "EnhancedMicrophone を使います。" );
-				mic = Microphone.getEnhancedMicrophone();
 				var options:MicrophoneEnhancedOptions = new MicrophoneEnhancedOptions();
 				options.mode = MicrophoneEnhancedMode.FULL_DUPLEX;
-				//options.autoGain = true;
+				options.autoGain = true;
 				mic.enhancedOptions = options;// Microphone インスタンスにオプションを設定
 			} else {
 				Logger.info( "通常のマイクを使います。" );
 				mic = Microphone.getMicrophone();
 				mic.setUseEchoSuppression( true );
+				mic.gain = 100;
 			}
-			mic.gain = 100;
 			mic.setSilenceLevel( 0 );
 			mic.codec = SoundCodec.SPEEX;
 			mic.enableVAD = false;
@@ -361,6 +361,7 @@
 					if( _currentState != CallReady ){
 						_currentState = CallReady;
 						status( "通話が切断されました" );
+						talkTerminated_sig.dispatch();
 						dispatchEvent( new CirrusEvent(CirrusEvent.TALK_TERMINATED) );
 					}
 					break;
