@@ -444,11 +444,6 @@
 
 			incomingStream.client = new CirrusClient();
 
-			remoteVideo = new Video();
-			remoteVideo.width = 320;
-			remoteVideo.height = 240;
-			remoteVideo.attachNetStream(incomingStream);
-
 			remoteName = user;
 			remoteId = identity;
 
