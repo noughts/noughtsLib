@@ -18,6 +18,7 @@
 		public var incomingCall_sig:Signal = new Signal();
 		public var callAccepted_sig:Signal = new Signal();// 通話が承諾されました。
 		public var talkTerminated_sig:Signal = new Signal();// 相手に切断されました。
+		public var talkStarted_sig:Signal = new Signal();// 会話が開始しました
 		
 
 		public var userName_str:String = "";
@@ -226,6 +227,13 @@
 		}
 
 
+		public function sendRemoteAction( ...args ):void{
+			if( outgoingStream ){
+				outgoingStream.send( "handleRemoteAction", args );
+			}
+		}
+
+
 		public function dispatchRemoteEvent( e:RemoteEvent ):void{
 			if( outgoingStream ){
 				var obj:Object = new Object();
@@ -327,6 +335,7 @@
 					status( "通話を承諾されました。" );
 					_currentState = CALL_ESTABLISHED;
 					callAccepted_sig.dispatch();
+					talkStarted_sig.dispatch();
 					dispatchEvent( new CirrusEvent(CirrusEvent.CALL_ACCEPTED) );
 					dispatchEvent( new CirrusEvent(CirrusEvent.TALK_STARTED) );
 				} else if( Bye == action ){
@@ -522,6 +531,7 @@
 			startAudio();
 
 			_currentState = CALL_ESTABLISHED;
+			talkStarted_sig.dispatch();
 			dispatchEvent( new CirrusEvent(CirrusEvent.TALK_STARTED) );
 		}
 
@@ -867,12 +877,17 @@
 	}
 }
 
+import jp.progression.casts.*;import jp.progression.commands.display.*;import jp.progression.commands.lists.*;import jp.progression.commands.managers.*;import jp.progression.commands.media.*;import jp.progression.commands.net.*;import jp.progression.commands.tweens.*;import jp.progression.commands.*;import jp.progression.data.*;import jp.progression.events.*;import jp.progression.loader.*;import jp.progression.*;import jp.progression.scenes.*;import jp.nium.core.debug.Logger;import jp.nium.utils.*;import caurina.transitions.*;
+
 import flash.events.*;
 import flash.display.*;
 import jp.nium.utils.*;
 import jp.noughts.cirrus.*;
+import org.osflash.signals.*;
 
 class CirrusClient extends EventDispatcher{
+
+	public var action_sig:Signal;
 
 
 	public function handleRemoteMouseEvent( obj:Object ):void{
@@ -885,6 +900,12 @@ class CirrusClient extends EventDispatcher{
 		//Logger.info( ObjectUtil.toString(obj) );
 		var event:RemoteEvent = new RemoteEvent( obj.type, obj.data );
 		dispatchEvent( event );
+	}
+
+	public function handleRemoteAction( args ):void{
+		Logger.info( ObjectUtil.toString(args) );
+		action_sig.dispatch( args );
+
 	}
 
 }
