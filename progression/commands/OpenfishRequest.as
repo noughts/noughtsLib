@@ -30,9 +30,13 @@ package jp.noughts.progression.commands{
 			_route = route;
 			if( param ){
 				_param = param;
-				_param.udid = udid;
+				if( method == URLRequestMethod.POST ){
+					_param.udid = udid;
+				}
 			} else {
-				_param = {udid: udid}
+				if( method == URLRequestMethod.POST ){
+					_param = {udid: udid}
+				}
 			}
 			
 			_method = method;
