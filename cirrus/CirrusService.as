@@ -26,6 +26,9 @@
 			return _isHost;
 		}
 		
+		// 自動で承認するか？
+		public var autoAccept:Boolean = false;
+
 
 		public var userName_str:String = "";
 		private var _sendVideo_bool:Boolean = true;
@@ -326,6 +329,12 @@
 
 						incomingCall_sig.dispatch();
 						dispatchEvent( new CirrusEvent(CirrusEvent.INCOMING_CALL) );
+
+						// 自動承認
+						if( autoAccept ){
+							acceptCall();
+						}
+
 					} else {
 						status("Call rejected due to state: " + _currentState + "\n");
 						netConnection.call( Relay, null, id, Reject, userName_str );
