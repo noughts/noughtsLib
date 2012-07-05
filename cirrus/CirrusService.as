@@ -64,7 +64,19 @@
 
 		public var remoteVideo:Video;
 		private var _localVideo:Video;
-		public function get localVideo():Video{ return _localVideo }
+		public function get localVideo():Video{
+			if( _localVideo ){
+				return _localVideo;
+			}
+
+			if( localCamera ){
+				_localVideo = new Video();
+				localVideo.attachCamera( localCamera );
+				return _localVideo	
+			}
+			return null;
+			
+		}
 		public var localCamera:Camera;
 
 		private var mic:Microphone;
@@ -196,8 +208,6 @@
 				localCamera.setQuality( 16384/8, 0 );
 				localCamera.addEventListener(StatusEvent.STATUS, onDeviceStatus);
 				localCamera.addEventListener(ActivityEvent.ACTIVITY, onDeviceActivity);
-				_localVideo = new Video();
-				localVideo.attachCamera( localCamera );
 				//changeCamera( 1 );
 			}
 
