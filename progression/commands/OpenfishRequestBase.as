@@ -24,6 +24,10 @@ package jp.noughts.progression.commands{
 				cocoafish = new Cocoafish( "appkey", "", baseUrl );
 			}
 
+			if( param && param["photo"] ){
+				Logger.info( "photoパラメータがあったのでエンコードします。" )
+				param["photo"] = Base64.encode( param["photo"] )
+			}
 
 			_route = route;
 			_param = param;
