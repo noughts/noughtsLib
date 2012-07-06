@@ -3,13 +3,10 @@
 
 使い方
 import jp.noughts.utils.ConstantTimer;
-import jp.noughts.utils.ConstantTimerEvent;
 
 var ct = new ConstantTimer();
-function ctTimerHandler (e:ConstantTimerEvent) {
-trace (e.count_num);
-}
-ct.addEventListener ("timer", ctTimerHandler);
+ct.speed = 2;
+ct.timer_sig.add( hogeFunc )
 ct.start();
 
 
