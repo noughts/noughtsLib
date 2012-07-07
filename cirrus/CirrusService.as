@@ -217,6 +217,7 @@
 		}
 
 
+
 		private function _watchTimer( e:TimerEvent ):void{
 			if( watchList_array.length > 0 ){
 				var ary:Array = new Array();
@@ -419,6 +420,9 @@
 
 		private function outgoingStreamHandler(event:NetStatusEvent):void{
 			status("Outgoing stream event: " + event.info.code + "\n");
+			// 以下をすると、受信側でビットマップにアクセスできる
+			outgoingStream.send("|RtmpSampleAccess", true, true);
+			outgoingStream.videoSampleAccess = true;
 		}
 
 
