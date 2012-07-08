@@ -14,7 +14,7 @@
 	public class CirrusService extends EventDispatcher{
 
 		// signals
-		public var loginComplete_sig:Signal = new Signal();
+		public var loginComplete_sig:Signal = new Signal();// ログイン成功
 		public var incomingCall_sig:Signal = new Signal();
 		public var callAccepted_sig:Signal = new Signal();// 通話が承諾されました。
 		public var talkTerminated_sig:Signal = new Signal();// 相手に切断されました。
