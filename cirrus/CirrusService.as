@@ -287,7 +287,7 @@
 
 		// CameraPosition.FRONT か CameraPosition.BACK を渡す
 		private function getCameraOf( position:String ):Camera{
-			Logger.info( "getCameraOf "+ position );
+			status( "getCameraOf "+ position );
 			var camera:Camera;
 			var cameraCount:uint = Camera.names.length;
 			for ( var i:uint = 0; i < cameraCount; ++i ){
@@ -536,6 +536,7 @@
 
 		// 電話に応答
 		public function acceptCall():void{
+			status( "CirrusService acceptCall" )
 			stopRing();
 
 			incomingStream.receiveAudio( true );
