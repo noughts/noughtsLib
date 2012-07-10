@@ -38,7 +38,7 @@ package jp.noughts.progression.commands{
 			_method = method;
 			
 			// 親クラスを初期化する
-			super( _executeFunction, _interruptFunction, initObject );
+			super( route, method, param );
 		}
 		
 
