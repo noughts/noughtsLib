@@ -16,7 +16,7 @@ package jp.noughts.progression.commands{
 		static public var baseUrl:String = "localhost:8080";
 
 				
-		public function OpenfishRequestAir( route:String, method:String, param:Object=null, initObject:Object = null ) {
+		public function OpenfishRequestAir( route:String, method:String=URLRequestMethod.GET, param:Object=null, initObject:Object = null ) {
 			if( !cocoafish ){
 				cocoafish = new Cocoafish( "appkey", "", baseUrl );
 			}
