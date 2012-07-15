@@ -19,7 +19,7 @@ package jp.noughts.progression.commands{
 		protected var _method:String;
 
 				
-		public function OpenfishRequestBase( route:String, method:String, param:Object=null, initObject:Object = null ) {
+		public function OpenfishRequestBase( route:String, method:String, param:Object=null ) {
 			if( !cocoafish ){
 				cocoafish = new Cocoafish( "appkey", "", baseUrl );
 			}
@@ -34,7 +34,7 @@ package jp.noughts.progression.commands{
 			_method = method;
 			
 			// 親クラスを初期化する
-			super( _executeFunction, _interruptFunction, initObject );
+			super( _executeFunction, _interruptFunction, null );
 		}
 		
 
