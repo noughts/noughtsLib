@@ -174,9 +174,9 @@
 			}
 			mic.setSilenceLevel( 0 );
 			mic.codec = SoundCodec.SPEEX;
-			mic.enableVAD = false;
-			mic.framesPerPacket = 1;
-			mic.encodeQuality = 10;
+			mic.enableVAD = true;
+			//mic.framesPerPacket = 1;
+			mic.encodeQuality = 6;
 			//mic.setLoopBack( true );
 
 			if (mic){
@@ -204,8 +204,8 @@
 			//}
 
 			if (localCamera){
-				localCamera.setMode( 640, 480, 30 );
-				localCamera.setQuality( 16384/8, 0 );
+				localCamera.setMode( 320, 240, 15 );
+				localCamera.setQuality( 16384/16, 0 );
 				localCamera.addEventListener(StatusEvent.STATUS, onDeviceStatus);
 				localCamera.addEventListener(ActivityEvent.ACTIVITY, onDeviceActivity);
 				//changeCamera( 1 );
