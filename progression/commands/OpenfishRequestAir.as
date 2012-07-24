@@ -18,7 +18,7 @@ package jp.noughts.progression.commands{
 				
 		public function OpenfishRequestAir( route:String, method:String=URLRequestMethod.GET, param:Object=null ) {
 			if( !cocoafish ){
-				cocoafish = new Cocoafish( "appkey", "", baseUrl );
+				cocoafish = new Cocoafish( "dd", "", baseUrl );
 			}
 
 			var udid:String = getUDID();

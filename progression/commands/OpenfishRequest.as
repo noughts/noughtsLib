@@ -17,7 +17,7 @@ package jp.noughts.progression.commands{
 				
 		public function OpenfishRequest( route:String, method:String, param:Object=null, initObject:Object = null ) {
 			if( !cocoafish ){
-				cocoafish = new Cocoafish( "appkey", "", baseUrl );
+				cocoafish = new Cocoafish( "dd", "", baseUrl );
 			}
 
 
