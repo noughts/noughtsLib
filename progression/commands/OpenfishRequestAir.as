@@ -42,6 +42,9 @@ package jp.noughts.progression.commands{
 		static public function autoCreateUser():SerialList{
 			var slist:SerialList = new SerialList();
 			slist.addCommand(
+				function(){
+					Logger.info( "自動ユーザー登録します。" )
+				},
 				new OpenfishRequestAir( "v1/users/create.json" ),
 				function(){
 					var result = this.latestData;
@@ -59,18 +62,29 @@ package jp.noughts.progression.commands{
 
 
 		// 自動ログインコマンドを作成して返す
-		static public function autoLogin():OpenfishRequestAir{
-			var storedUsername:ByteArray = EncryptedLocalStore.getItem('openfishAutoLoginUsername');
-			var storedPassword:ByteArray = EncryptedLocalStore.getItem('openfishAutoLoginPassword');
+		static public function autoLogin():SerialList{
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+				function(){
+					Logger.info( "自動ログインします。" )
+					var storedUsername:ByteArray = EncryptedLocalStore.getItem('openfishAutoLoginUsername');
+					var storedPassword:ByteArray = EncryptedLocalStore.getItem('openfishAutoLoginPassword');
 
-			var username_str:String = storedUsername ? storedUsername.readUTFBytes( storedUsername.length ) : "";
-			var password_str:String = storedPassword ? storedPassword.readUTFBytes( storedPassword.length ) : "";
+					var username_str:String = storedUsername ? storedUsername.readUTFBytes( storedUsername.length ) : "";
+					var password_str:String = storedPassword ? storedPassword.readUTFBytes( storedPassword.length ) : "";
 
-			var com:OpenfishRequestAir = new OpenfishRequestAir( "v1/users/login.json", URLRequestMethod.POST, {
-				username: username_str,
-				password: password_str
-			} );
-			return com;
+					slist.insertCommand( new OpenfishRequestAir( "v1/users/login.json", URLRequestMethod.POST, {
+						login: username_str,
+						password: password_str
+					} ));
+				},
+				function(){
+					slist.latestData = this.latestData;
+				},
+			null);
+			return slist;
+			
+
 		}
 
 
