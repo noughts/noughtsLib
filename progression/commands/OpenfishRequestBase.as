@@ -7,7 +7,7 @@ package jp.noughts.progression.commands{
 	import jp.nium.core.debug.Logger;
 	import jp.nium.utils.ObjectUtil;
 	import jp.progression.core.PackageInfo;
-	import com.cocoafish.sdk.Cocoafish;
+	import jp.noughts.cocoafish.sdk.Cocoafish;
 	import jp.noughts.utils.*;
 
 	public class OpenfishRequestBase extends Command {

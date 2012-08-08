@@ -3,7 +3,7 @@ package jp.noughts.progression.commands{
 	import flash.events.*;import flash.display.*;import flash.system.*;import flash.utils.*;import flash.net.*;import flash.media.*;import flash.geom.*;import flash.text.*;import flash.media.*;import flash.system.*;import flash.ui.*;import flash.external.ExternalInterface;import flash.filters.*;
 	import mx.utils.*;
 
-	import com.cocoafish.sdk.Cocoafish;
+	import jp.noughts.cocoafish.sdk.Cocoafish;
 	import flash.data.*;
 	import jp.noughts.utils.*;
 
