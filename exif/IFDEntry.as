@@ -1,4 +1,4 @@
-package jp.shichiseki.exif {
+package jp.noughts.exif {
 	import flash.utils.ByteArray;
 	/**
 	 * The IFDEntry class is an entry in an IFD. The IFDEntry class contains type, name, id

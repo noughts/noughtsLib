@@ -1,4 +1,4 @@
-package jp.shichiseki.exif {
+package jp.noughts.exif {
 	/**
 	 * The Tags class has some tagset that contain tags will be appeared in IFD of a
 	 * JPEG file.

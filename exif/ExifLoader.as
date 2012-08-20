@@ -1,4 +1,4 @@
-package jp.shichiseki.exif {
+package jp.noughts.exif {
 	import flash.display.Loader;
 	import flash.system.LoaderContext;
 	import flash.utils.ByteArray;

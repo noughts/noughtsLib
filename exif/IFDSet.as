@@ -1,4 +1,4 @@
-package jp.shichiseki.exif {
+package jp.noughts.exif {
 	/**
 	 * The IFDSet is a set of IFD which are included in a JPEG file.
 	 */
