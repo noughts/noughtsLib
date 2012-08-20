@@ -268,7 +268,7 @@ package jp.noughts.air{
 
 		public override function set visible(visible:Boolean):void
 		{
-			this.visible = visible;
+			//this.visible = visible;
 			this.st.visible = visible;
 		}
 		
