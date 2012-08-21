@@ -69,9 +69,21 @@ package jp.noughts.air{
 		private var _borderColor:uint = 0x000000;
 		private var _borderCornerSize:uint = 0;
 		private var lineMetric:TextLineMetrics;
+		public var hintColor:uint = 0xcccccc;
+		public var color:uint = 0;
 
-		public function NativeText(numberOfLines:uint = 1)
-		{
+		private var _hintText:String = "";
+		public function set hintText( val:String ):void{
+			_hintText = val;
+		}
+		public function get hintText():String{ return _hintText }
+
+		private var _value:String = "";
+		public function get value():String{ return _value }
+
+
+
+		public function NativeText(numberOfLines:uint = 1){
 			super();
 			
 			this.addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
@@ -80,34 +92,30 @@ package jp.noughts.air{
 			this.numberOfLines = numberOfLines;
 			var stio:StageTextInitOptions = new StageTextInitOptions((this.numberOfLines > 1));
 			this.st = new StageText(stio);
+
+			this.st.fontSize = 32;
 		}
+
+
 		
-		public override function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void
-		{
-			if (this.isEventTypeStageTextSpecific(type))
-			{
+		public override function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void{
+			if (this.isEventTypeStageTextSpecific(type)){
 				this.st.addEventListener(type, listener, useCapture, priority, useWeakReference);
-			}
-			else
-			{
+			}else{
 				super.addEventListener(type, listener, useCapture, priority, useWeakReference);
 			}
 		}
+
 		
-		public override function removeEventListener(type:String, listener:Function, useCapture:Boolean=false):void
-		{
-			if (this.isEventTypeStageTextSpecific(type))
-			{
+		public override function removeEventListener(type:String, listener:Function, useCapture:Boolean=false):void{
+			if (this.isEventTypeStageTextSpecific(type)){
 				this.st.removeEventListener(type, listener, useCapture);
-			}
-			else
-			{
+			}else{
 				super.removeEventListener(type, listener, useCapture);
 			}
 		}
 		
-		private function isEventTypeStageTextSpecific(type:String):Boolean
-		{
+		private function isEventTypeStageTextSpecific(type:String):Boolean{
 			return (type == Event.CHANGE ||
 					type == FocusEvent.FOCUS_IN ||
 					type == FocusEvent.FOCUS_OUT ||
@@ -118,17 +126,42 @@ package jp.noughts.air{
 					type == SoftKeyboardEvent.SOFT_KEYBOARD_DEACTIVATE);
 		}
 		
-		private function onAddedToStage(e:Event):void
-		{
+
+
+		private function onAddedToStage(e:Event):void{
 			this.st.stage = this.stage;
 			this.render();
 			this.addEventListener( Event.ENTER_FRAME, _onEnterFrame );
+			this.addEventListener( FocusEvent.FOCUS_IN, _onFocusIn );
+			this.addEventListener( FocusEvent.FOCUS_OUT, _onFocusOut );
+			this.addEventListener( Event.CHANGE, _onChangeText );
+			_onFocusOut();// hintTextを表示
+
 		}
 		
-		private function onRemoveFromStage(e:Event):void
-		{
+		private function onRemoveFromStage(e:Event):void{
 			this.removeEventListener( Event.ENTER_FRAME, _onEnterFrame );
 			this.st.dispose();
+			this.removeEventListener( FocusEvent.FOCUS_IN, _onFocusIn );
+			this.removeEventListener( FocusEvent.FOCUS_OUT, _onFocusOut );
+			this.removeEventListener( Event.CHANGE, _onChangeText );
+		}
+
+		private function _onFocusIn( e:FocusEvent ):void{
+			if( value=="" ){
+				this.text = "";
+				st.color = color;
+			}
+		}
+		private function _onFocusOut( e:FocusEvent=null ):void{
+			if( value=="" ){
+				this.text = hintText;
+				st.color = hintColor;
+			}
+		}
+
+		private function _onChangeText( e:Event ):void{
+			_value = this.text;
 		}
 
 		private function _onEnterFrame( e:Event ):void{
@@ -180,10 +213,7 @@ package jp.noughts.air{
 			this.st.autoCorrect = autoCorrect;
 		}
 		
-		public function set color(color:uint):void
-		{
-			this.st.color = color;
-		}
+
 		
 		public function set displayAsPassword(displayAsPassword:Boolean):void
 		{
