@@ -69,7 +69,7 @@ package jp.noughts.air{
 		private var _borderColor:uint = 0x000000;
 		private var _borderCornerSize:uint = 0;
 		private var lineMetric:TextLineMetrics;
-		public var hintColor:uint = 0xcccccc;
+		public var hintColor:uint = 0x999999;
 		public var color:uint = 0;
 
 		private var _hintText:String = "";
