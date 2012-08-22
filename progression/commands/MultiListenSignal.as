@@ -14,6 +14,7 @@ package jp.noughts.progression.commands {
 	import flash.events.IEventDispatcher;
 	import jp.nium.utils.ObjectUtil;
 	import org.osflash.signals.*;
+	import org.osflash.signals.events.*;
 
 	/**
 	 * <span lang="ja">Listen クラスは、指定された EventDispatcher が指定されたイベントを送出するまで待機処理を行うコマンドクラスです。</span>
@@ -26,7 +27,7 @@ package jp.noughts.progression.commands {
 	 * // コマンドを登録する
 	 * com.addCommand(
 	 * 	new Trace( "クリックを待ちます" ),
-	 * 	new ListenSignal( hoge_sig ),
+	 * 	new MultiListenSignal( hoge_sig ),
 	 * 	new Trace( "クリックされました" )
 	 * );
 	 * 
@@ -34,14 +35,18 @@ package jp.noughts.progression.commands {
 	 * com.execute();
 	 * </listing>
 	 */
-	public class ListenSignal extends Command {
+	public class MultiListenSignal extends Command {
+		
+		public function get signals():Vector.<Signal> { return _signals; }
+		private var _signals:Vector.<Signal>;
+
+
+		private var _dispatchedSignal:Signal;
+		public function get dispatchedSignal():Signal{ return _dispatchedSignal }
+		private var _dispatchedArgs:Array;
+		public function get dispatchedArgs():Array{ return _dispatchedArgs }
 		
 
-		public function get signal():Signal { return _signal; }
-		private var _signal:Signal;
-
-		
-		
 		/**
 		 * <span lang="ja">イベント待ちをしているかどうかを取得します。</span>
 		 * <span lang="en"></span>
@@ -69,9 +74,9 @@ package jp.noughts.progression.commands {
 		 * <span lang="ja">設定したいプロパティを含んだオブジェクトです。</span>
 		 * <span lang="en"></span>
 		 */
-		public function ListenSignal( signal:Signal, initObject:Object = null ) {
+		public function MultiListenSignal( signals:Vector.<Signal>, initObject:Object = null ) {
 			// 引数を設定する
-			_signal = signal;
+			_signals = signals;
 			
 			// 親クラスを初期化する
 			super( _executeFunction, _interruptFunction, initObject );
@@ -86,17 +91,19 @@ package jp.noughts.progression.commands {
 		 */
 		private function _executeFunction():void {
 			// イベントが存在するかどうか確認する
-			if( _signal ){
+			if( _signals ){
 				_listening = true;
 			}
-			_signal.addOnce( _listener );
+			_signals.forEach( function( item:Signal, index:int, vector:Vector.<Signal> ){
+				item.addOnce( _listener )
+			} );
 		}
 		
 		/**
 		 * 中断実行されるコマンドの実装です。
 		 */
 		private function _interruptFunction():void {
-			_signal.remove( _listener );
+			_resetSignals();
 		}
 		
 		/**
@@ -107,8 +114,7 @@ package jp.noughts.progression.commands {
 			// 親のメソッドを実行する
 			super.dispose();
 			_listening = false;
-			_signal.remove( _listener );
-			_signal = null;
+			_resetSignals();
 		}
 		
 		/**
@@ -120,7 +126,7 @@ package jp.noughts.progression.commands {
 		 * <span lang="en">A new Func object that is identical to the original.</span>
 		 */
 		override public function clone():Command {
-			return new ListenSignal( _signal, this );
+			return new MultiListenSignal( _signals, this );
 		}
 		
 		/**
@@ -136,15 +142,22 @@ package jp.noughts.progression.commands {
 		}
 		
 		
-		
+		private function _resetSignals():void{
+			_signals.forEach( function( item:Signal, index:int, vector:Vector.<Signal> ){
+				item.remove( _listener );
+			} );
+		}
 		
 		
 		/**
 		 * dispatcher の eventType イベントが発生した瞬間に送出されます。
 		 */
-		private function _listener():void {
+		private function _listener( e:GenericEvent, ...rest:Array ):void {
 			// 実行中であれば
 			if ( super.state > 1 ) {
+				_dispatchedSignal = e.signal as Signal
+				_dispatchedArgs = rest;
+				_resetSignals();
 				super.executeComplete();
 			}
 		}
