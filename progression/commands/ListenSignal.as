@@ -40,7 +40,9 @@ package jp.noughts.progression.commands {
 		public function get signal():Signal { return _signal; }
 		private var _signal:Signal;
 
-		
+		private var _dispatchedArgs:Array;
+		public function get dispatchedArgs():Array{ return _dispatchedArgs }
+
 		
 		/**
 		 * <span lang="ja">イベント待ちをしているかどうかを取得します。</span>
@@ -142,9 +144,10 @@ package jp.noughts.progression.commands {
 		/**
 		 * dispatcher の eventType イベントが発生した瞬間に送出されます。
 		 */
-		private function _listener():void {
+		private function _listener( ...args:Array ):void {
 			// 実行中であれば
 			if ( super.state > 1 ) {
+				_dispatchedArgs = args;
 				super.executeComplete();
 			}
 		}
