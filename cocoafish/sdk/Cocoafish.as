@@ -13,8 +13,9 @@ package jp.noughts.cocoafish.sdk {
 	import flash.net.URLRequestMethod;
 	import flash.net.URLVariables;
 	
-	import mx.collections.ArrayList;
+	//import mx.collections.Array;
 	import mx.utils.URLUtil;
+	import jp.nium.utils.ArrayUtil;
 	
 	import org.iotashan.oauth.IOAuthSignatureMethod;
 	import org.iotashan.oauth.OAuthConsumer;
@@ -25,7 +26,7 @@ package jp.noughts.cocoafish.sdk {
 		var appKey:String = null;
 		var sessionId:String = null;
 		var consumer:OAuthConsumer = null;
-		var listeners:ArrayList = null;
+		var listeners:Array = null;
 		var apiBaseURL:String = null;
 		
 		public function Cocoafish(key:String, oauthSecret:String = "", baseURL:String = null) {
@@ -208,21 +209,23 @@ package jp.noughts.cocoafish.sdk {
 		
 		public function addProgressListener(listener:Function):void {
 			if(listeners == null) {
-				listeners = new ArrayList();
+				listeners = new Array();
 			}
-			listeners.addItem(listener);
+			listeners.push(listener);
 		}
 		
 		public function removeProgressListener(listener:Function):void {
 			if(listeners != null) {
-				listeners.removeItem(listener);
+				var i:int = ArrayUtil.getItemIndex( listeners, listener );
+				listeners.splice( i, 1 );
+				//listeners.removeItem(listener);
 			}
 		}
 		
 		private function registerProgressListeners(fileRef:FileReference):void {
 			if(listeners != null) {
 				for(var i:int = 0; i< listeners.length; i++) {
-					fileRef.addEventListener(ProgressEvent.PROGRESS, listeners.getItemAt(i) as Function);
+					fileRef.addEventListener(ProgressEvent.PROGRESS, listeners[i] as Function);
 				}
 			}
 		}
