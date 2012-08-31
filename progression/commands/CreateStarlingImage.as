@@ -82,11 +82,15 @@ package jp.noughts.progression.commands {
 			slist.addCommand(
 				new WaitFrame( 1 ),
 				function(){
-					tex = Texture.fromBitmapData( bd, false );
+					Logger.info(1)
+					tex = Texture.fromBitmapData( bd, false );// asc2=50ms
+					Logger.info(2)
 				},
 				new WaitFrame( 1 ),
 				function(){
-					_starlingImage = new Image( tex );
+					Logger.info(3)
+					_starlingImage = new Image( tex );// asc2=10ms
+					Logger.info(4)
 					_onComplete()
 				},
 			null);
