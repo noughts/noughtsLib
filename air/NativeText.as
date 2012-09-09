@@ -35,10 +35,7 @@ package jp.noughts.air{
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.Sprite;
-	import flash.events.Event;
-	import flash.events.FocusEvent;
-	import flash.events.KeyboardEvent;
-	import flash.events.SoftKeyboardEvent;
+	import flash.events.*;
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
 	import flash.geom.Point;
@@ -65,6 +62,7 @@ package jp.noughts.air{
 			return _signals ||= new StageTextSignalSet( this.st );
 		}
 
+		public var autoFreeze:Boolean = true;// フォーカスアウトでフリーズ、フォーカスインでフリーズ解除を自動設定
 		private var st:StageText;
 		private var numberOfLines:uint;
 		private var _width:uint, _height:uint;
@@ -141,6 +139,9 @@ package jp.noughts.air{
 			this.addEventListener( Event.CHANGE, _onChangeText );
 			_onFocusOut();// hintTextを表示
 
+			if( autoFreeze ){
+				signals.focusOut.add( _freezeOnFocusOut )
+			}
 		}
 		
 		private function onRemoveFromStage(e:Event):void{
@@ -149,7 +150,13 @@ package jp.noughts.air{
 			this.removeEventListener( FocusEvent.FOCUS_IN, _onFocusIn );
 			this.removeEventListener( FocusEvent.FOCUS_OUT, _onFocusOut );
 			this.removeEventListener( Event.CHANGE, _onChangeText );
+			signals.focusOut.remove( _freezeOnFocusOut )
 		}
+
+		private function _freezeOnFocusOut( e:FocusEvent ):void{
+			freeze();
+		}
+
 
 		private function _onFocusIn( e:FocusEvent ):void{
 			if( value=="" ){
@@ -328,7 +335,7 @@ package jp.noughts.air{
 			var viewPortRectangle:Rectangle = this.getViewPortRectangle();
 			var border:Sprite = new Sprite();
 			this.drawBorder(border);
-			var bmd:BitmapData = new BitmapData(this.st.viewPort.width, this.st.viewPort.height);
+			var bmd:BitmapData = new BitmapData(this.st.viewPort.width, this.st.viewPort.height, true, 0);
 			this.st.drawViewPortToBitmapData(bmd);
 			bmd.draw(border, new Matrix(1, 0, 0, 1, this.x - viewPortRectangle.x, this.y - viewPortRectangle.y));
 			this.snapshot = new Bitmap(bmd);
@@ -336,16 +343,33 @@ package jp.noughts.air{
 			//this.snapshot.y = viewPortRectangle.y - this.y;
 			this.addChild(this.snapshot);
 			this.st.visible = false;
+
+			if( autoFreeze ){
+				// フリーズ解除のハンドラを仕掛ける
+				signals.focusIn.add( _onFocusInByClickSnapshop )
+				this.addEventListener( MouseEvent.CLICK, _unfreezeByClickSnapshot );
+			}
 		}
 		
 		public function unfreeze():void
 		{
 			if (this.snapshot != null && this.contains(this.snapshot))
 			{
+				signals.focusIn.remove( _onFocusInByClickSnapshop )
+				this.removeEventListener( MouseEvent.CLICK, _unfreezeByClickSnapshot );
 				this.removeChild(this.snapshot);
 				this.snapshot = null;
 				this.st.visible = true;
 			}
+		}
+
+		private function _onFocusInByClickSnapshop( e:FocusEvent ):void{
+			unfreeze();
+		}
+
+		private function _unfreezeByClickSnapshot( e:MouseEvent ):void{
+			unfreeze();
+			assignFocus()
 		}
 		
 		//// Functions that must be overridden to make this work ///
