@@ -59,8 +59,12 @@ package jp.noughts.air{
 	[Event(name="softKeyboardActivating", type="flash.events.SoftKeyboardEvent")]
 	[Event(name="softKeyboardDeactivate", type="flash.events.SoftKeyboardEvent")]
 	
-	public class NativeText extends Sprite
-	{
+	public class NativeText extends Sprite{
+		private var _signals:StageTextSignalSet;
+		public function get signals():StageTextSignalSet{ 
+			return _signals ||= new StageTextSignalSet( this.st );
+		}
+
 		private var st:StageText;
 		private var numberOfLines:uint;
 		private var _width:uint, _height:uint;
@@ -428,3 +432,8 @@ package jp.noughts.air{
 		}
 	}
 }
+
+
+
+
+
