@@ -51,8 +51,6 @@
 			super( initObject );
 			view = _view;
 			addChild( view );
-			view.cacheAsBitmapMatrix = new Matrix();
-			view.cacheAsBitmap = true;
 			// 移動先となるシーン識別子を設定します。
 			//sceneId = new SceneId( "/index" );
 
