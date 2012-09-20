@@ -32,11 +32,16 @@ package jp.noughts.display{
 		static private  var AA_BLUR_STRENGTH:Number = 2;// ぼかしの強さ
 		static private  var AA_BLUR_QUALITY:Number = 2;// ぼかしのクオリティ
 
+		public var textWidth:uint;
 		private var _textField:TextField;
 
-		public function BitmapTextField( tfm:TextFormat=null ){
+		public function BitmapTextField( tfm:TextFormat=null, textWidth:uint=0 ){
 			_textField = new TextField();
-			_textField.autoSize = "left"
+			if( textWidth == 0 ){
+				_textField.autoSize = "left"
+			} else {
+				_textField.width = textWidth
+			}
 
 			if( tfm ){
 				_textField.defaultTextFormat = tfm;	
