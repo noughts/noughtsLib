@@ -50,6 +50,8 @@
 			// 親クラスを初期化します。
 			super( initObject );
 			view = _view;
+			view.x = 0;
+			view.y = 0;
 			addChild( view );
 			// 移動先となるシーン識別子を設定します。
 			//sceneId = new SceneId( "/index" );
