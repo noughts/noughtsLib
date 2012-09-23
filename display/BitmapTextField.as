@@ -53,17 +53,6 @@ package jp.noughts.display{
 			update()
 		}
 
-		public function set size( val:uint ):void{
-			var format:TextFormat = new TextFormat();
-			//format.font = "Verdana";
-			//format.color = 0xFF0000;
-			format.size = val;
-
-			_textField.defaultTextFormat = format;		
-			_textField.setTextFormat( format )	
-			update()
-		}
-
 
 		public function update():void{
 			if( this.numChildren > 0 ){
@@ -84,7 +73,7 @@ package jp.noughts.display{
 				//var aaWidth:Number = _textField.width + AA_MARGIN_WIDTH;
 				aaWidth = _textField.width;
 			} else {
-				aaWidth = (_textField.textWidth || _textField.width) * 1.2;
+				aaWidth = (_textField.textWidth || _textField.width);
 			}
 			//var aaHeight:Number = (_textField.textHeight || _textField._height) + AA_MARGIN_HEIGHT;
 			var aaHeight:Number = (_textField.textHeight || _textField.height) * 1.2;
