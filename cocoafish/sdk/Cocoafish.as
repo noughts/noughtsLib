@@ -63,11 +63,7 @@ package jp.noughts.cocoafish.sdk {
 			}
 			
 			var reqURL:String = null;
-			if(appKey != null) {
-				reqURL = baseURL + url + Constants.KEY + appKey;
-			} else if(consumer != null) {
-				reqURL = baseURL + url;
-			}
+			reqURL = baseURL + url;
 			
 			var httpMethod:String = null;
 			if(method == URLRequestMethod.DELETE) {
