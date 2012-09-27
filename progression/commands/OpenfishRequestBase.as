@@ -42,7 +42,11 @@ package jp.noughts.progression.commands{
 		 * 実行されるコマンドの実装です。
 		 */
 		private function _executeFunction():void {
-			cocoafish.sendRequest( _route, _method, _param, _requestComplete, false );
+			var isSecure:Boolean = false;
+			if( getRunsOnGAEServer() ){
+				isSecure = true;
+			}
+			cocoafish.sendRequest( _route, _method, _param, _requestComplete, isSecure );
 		}
 		
 		private function _requestComplete( data:Object ):void {
@@ -53,6 +57,16 @@ package jp.noughts.progression.commands{
 			super.latestData = data;
 			_destroyTimer();// を破棄する
 			super.executeComplete();// 処理を終了する
+		}
+
+
+		// gaeサーバー上で動いているかどうかを判定
+		private function getRunsOnGAEServer():Boolean{
+			if( baseUrl.indexOf(".com")>-1 || baseUrl.indexOf(".jp")>-1 ){
+				return true;
+			} else {
+				return false;
+			}
 		}
 
 		
