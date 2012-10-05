@@ -1,14 +1,10 @@
 package jp.noughts.media{
-	import flash.display.*;
-	import flash.events.*;
-	import flash.net.*;
-	import flash.utils.*;
-	import flash.media.*;
-	import flash.geom.*;
+	import jp.progression.config.*;import jp.progression.debug.*;import jp.progression.casts.*;import jp.progression.commands.display.*;import jp.progression.commands.lists.*;import jp.progression.commands.managers.*;import jp.progression.commands.media.*;import jp.progression.commands.net.*;import jp.progression.commands.tweens.*;import jp.progression.commands.*;import jp.progression.data.*;import jp.progression.events.*;import jp.progression.loader.*;import jp.progression.*;import jp.progression.scenes.*;import jp.nium.core.debug.Logger;import caurina.transitions.*;import caurina.transitions.properties.*;
+	import flash.events.*;import flash.display.*;import flash.system.*;import flash.utils.*;import flash.net.*;import flash.media.*;import flash.geom.*;import flash.text.*;import flash.media.*;import flash.system.*;import flash.ui.*;import flash.external.ExternalInterface;import flash.filters.*;
+	import mx.utils.*;
+	import org.osflash.signals.*;import org.osflash.signals.natives.*;import org.osflash.signals.natives.sets.*;import org.osflash.signals.natives.base.*;
+
 	import caurina.transitions.Tweener;
-
-
-	import jp.nium.core.debug.Logger;
 	import cocoaas3.Titanium.UI.*
 
 
@@ -75,7 +71,7 @@ package jp.noughts.media{
 		}
 
 
-		public function changeCamera():void{
+		public function toggleCamera():void{
 			switch( _cameraId ){
 				case "0":
 					_cameraId = "1"
@@ -93,21 +89,26 @@ package jp.noughts.media{
 			if( _video ){
 				removeChild( _video );
 			}
-
+			var standardRatio:Number = 1024/768;
+			_video = new Video( _height*standardRatio, _height );
+			_video.smoothing = true;
+			
 			// カメラ設定 いじると、flvの再生時に不具合が起こるので慎重に！
-			_camera.setMode( 320, 240, 15 );
-			_camera.setQuality( 16384*3, 0 );
+			_camera.setMode( 1024, 768, 30 );
 
-			var ratio:Number = 640 / 480;
+
 			var frameSize:Rectangle = new Rectangle( 0, 0, _width, _height );
-			var h:uint = frameSize.width;
-			var w:uint = frameSize.width * ratio;
-			_video = new Video( w, h );
-			_video.rotation = 90;
-			_video.x = frameSize.width;
-			_video.y = frameSize.height/2 - w/2;
+			
+			if( Capabilities.os.indexOf("iPhone")>-1 ){
+				_video.rotation = 90;
+				_video.x = frameSize.width;
+				_video.y = frameSize.height/2 - _video.width/2;
+			} else {
+				_video.x = 0 - (_video.width-_width)/2
+			}
 			_video.attachCamera( _camera );
 			addChild( _video );
+			this.scrollRect = frameSize
 		}	
 
 
