@@ -1,6 +1,6 @@
 package jp.noughts.cocoafish.sdk {
 	import jp.noughts.cocoafish.constants.Constants;
-	
+	import flash.utils.*;
 	import flash.events.DataEvent;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
@@ -41,6 +41,21 @@ package jp.noughts.cocoafish.sdk {
 				apiBaseURL = Constants.API_BASE_URL;
 			}
 		}
+
+		private function _uploadData( url:String, data:ByteArray, callbackFunc:Function ):void{
+			var req:URLRequest = new URLRequest( url )
+			req.method = "POST"
+			req.data = data;
+
+			var loader:URLLoader = new URLLoader();
+			loader.dataFormat = URLLoaderDataFormat.BINARY;
+			//Request complete
+			loader.addEventListener(Event.COMPLETE, function():void{
+				completeCallback( loader.data, callbackFunc );
+			});
+			loader.load( req )
+
+		}
 		
 		public function sendRequest(url:String, method:String, data:Object, callback:Object, useSecure:Object = null):CCRequest {
 			var isSecure:Boolean = true;
@@ -67,6 +82,11 @@ package jp.noughts.cocoafish.sdk {
 				reqURL = baseURL + url + Constants.KEY + appKey;
 			} else if(consumer != null) {
 				reqURL = baseURL + url;
+			}
+
+			if( data is ByteArray ){
+				_uploadData( reqURL, data as ByteArray, callbackFunc );
+				return null;
 			}
 			
 			var httpMethod:String = null;

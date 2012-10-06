@@ -24,7 +24,7 @@ package jp.noughts.progression.commands{
 				cocoafish = new Cocoafish( "dd", "", baseUrl );
 			}
 
-			if( param && param["photo"] ){
+			if( param && param is ByteArray==false && param["photo"] ){
 				Logger.info( "photoパラメータがあったのでエンコードします。" )
 				param["photo"] = Base64.encode( param["photo"] )
 			}
