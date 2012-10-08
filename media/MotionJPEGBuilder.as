@@ -1,3 +1,23 @@
+/*
+
+HOW TO USE
+
+var record_file:File = File.documentsDirectory.resolvePath( "test.avi" );
+var mjpegBuilder:MotionJPEGBuilder = new MotionJPEGBuilder();
+mjpegBuilder.setup( record_file, 320, 240, 10 );
+
+// フレームを追加していきます
+mjpegBuilder.addCanvasFrame( bitmapData );
+mjpegBuilder.addCanvasFrame( bitmapData );
+mjpegBuilder.addCanvasFrame( bitmapData );
+...
+
+// ファイナライズ
+mjpegBuilder.finish( trace )
+
+
+*/
+
 package jp.noughts.media{
 	import jp.progression.config.*;import jp.progression.debug.*;import jp.progression.casts.*;import jp.progression.commands.display.*;import jp.progression.commands.lists.*;import jp.progression.commands.managers.*;import jp.progression.commands.media.*;import jp.progression.commands.net.*;import jp.progression.commands.tweens.*;import jp.progression.commands.*;import jp.progression.data.*;import jp.progression.events.*;import jp.progression.loader.*;import jp.progression.*;import jp.progression.scenes.*;import jp.nium.core.debug.Logger;import caurina.transitions.*;import caurina.transitions.properties.*;
 

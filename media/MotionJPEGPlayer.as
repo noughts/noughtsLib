@@ -1,3 +1,18 @@
+/*
+
+HOW TO USE
+
+var mpegPlayer:MotionJPEGPlayer = new MotionJPEGPlayer( 320, 240, 10 );
+mpegPlayer.width = 1024;
+mpegPlayer.height = 768;
+
+mpegPlayer.loadFile( "test.avi" ),
+
+
+*/
+
+
+
 package jp.noughts.media{
 
 	import jp.progression.config.*;import jp.progression.debug.*;import jp.progression.casts.*;import jp.progression.commands.display.*;import jp.progression.commands.lists.*;import jp.progression.commands.managers.*;import jp.progression.commands.media.*;import jp.progression.commands.net.*;import jp.progression.commands.tweens.*;import jp.progression.commands.*;import jp.progression.data.*;import jp.progression.events.*;import jp.progression.loader.*;import jp.progression.*;import jp.progression.scenes.*;import jp.nium.core.debug.Logger;import caurina.transitions.*;import caurina.transitions.properties.*;
