@@ -16,6 +16,9 @@ mjpegBuilder.addCanvasFrame( bitmapData );
 mjpegBuilder.finish( trace )
 
 
+file を指定しなかったときは、finish後、mjpegBuilder.builder で ByteArray が取り出せます。
+
+
 */
 
 package jp.noughts.media{
@@ -36,7 +39,7 @@ package jp.noughts.media{
 		private var moviLIST:MoviLIST
 		private var headerLIST:HeaderLIST
 		private var avi:AVIStruct;
-		private var builder:BlobBuilder;
+		public var builder:BlobBuilder;
 		private var file:File;
 
 		private var jpegEncoderOptions:JPEGEncoderOptions = new JPEGEncoderOptions();

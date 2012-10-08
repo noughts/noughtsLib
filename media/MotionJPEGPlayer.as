@@ -6,6 +6,8 @@ var mpegPlayer:MotionJPEGPlayer = new MotionJPEGPlayer( 320, 240, 10 );
 mpegPlayer.width = 1024;
 mpegPlayer.height = 768;
 
+
+stage.addChild( mpegPlayer )
 mpegPlayer.loadFile( "test.avi" ),
 
 
