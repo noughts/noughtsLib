@@ -62,7 +62,7 @@ package jp.noughts.media{
 
 
 
-		public function loadFile( filePath:String, continuousMode:Boolean=false ){
+		public function loadFile( file:File, continuousMode:Boolean=false ){
 			// 初期化
 			currentFrame = 0;
 			frames = new Vector.<ByteArray>();
@@ -75,7 +75,6 @@ package jp.noughts.media{
 
 
 			Logger.info( "ファイルロード開始" )
-			var file:File = File.documentsDirectory.resolvePath( filePath );
 
 			// 読み込みモードで開く（非同期）
 			fileStream.openAsync (file , FileMode.READ);
