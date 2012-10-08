@@ -77,12 +77,7 @@ package jp.noughts.cocoafish.sdk {
 				baseURL = Constants.API_NON_SECURE + apiBaseURL + "/";
 			}
 			
-			var reqURL:String = null;
-			if(appKey != null) {
-				reqURL = baseURL + url + Constants.KEY + appKey;
-			} else if(consumer != null) {
-				reqURL = baseURL + url;
-			}
+			var reqURL:String = baseURL + url;
 
 			if( data is ByteArray ){
 				_uploadData( reqURL, data as ByteArray, callbackFunc );
@@ -192,7 +187,7 @@ package jp.noughts.cocoafish.sdk {
 					var params:String = getURLParameters(data);
 					if(params != null && params.length > 0) {
 						if(httpMethod == URLRequestMethod.GET) {
-							request.url += Constants.PARAMETER_DELIMITER + params;
+							request.url += "?" + params;
 						} else {
 							request.data = params;
 						}
