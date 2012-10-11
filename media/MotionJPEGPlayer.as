@@ -44,9 +44,18 @@ package jp.noughts.media{
 		private var screen_bd:BitmapData;
 		private var showFrameStartTime:uint;
 		private var frameWait:uint;
+		private var useFrames:Boolean
+		private var loopCounter:uint = 0;
 
-		public function MotionJPEGPlayer( $width:uint, $height:uint, $fps:uint ){
-			frameWait = 1000 / $fps;
+
+		// useFrames が true の時は、{$fps}フレームごとに1枚すすめる
+		public function MotionJPEGPlayer( $width:uint, $height:uint, $fps:uint, $useFrames:Boolean=false ){
+			useFrames = $useFrames;
+			if( useFrames ){
+				frameWait = $fps;
+			} else {
+				frameWait = 1000 / $fps;
+			}
 			screen_bd = new BitmapData( $width, $height, true, 0 )
 			var screen_bmp:Bitmap = new Bitmap( screen_bd )
 			screen_bmp.smoothing = true
@@ -80,9 +89,17 @@ package jp.noughts.media{
 			fileStream.openAsync (file , FileMode.READ);
 
 			_showFrame();
+			loopCounter = 0;
+			this.addEventListener( Event.ENTER_FRAME, _loop );
 		}
 
 
+		private function _loop(e:Event):void{
+			if( loopCounter % frameWait == 0 ){
+				_showFrame()
+			}
+			loopCounter++
+		}
 
 
 		private function _showFrame(){
@@ -96,6 +113,8 @@ package jp.noughts.media{
 			loader.loadBytes( frames[currentFrame] );
 		}
 
+
+
 		private function _onLoaderLoadComplete(e:Event):void{
 			screen_bd.draw( loader )
 
@@ -107,16 +126,22 @@ package jp.noughts.media{
 				//fileStream.removeEventListener(IOErrorEvent.IO_ERROR, FileIOErrorFunc);
 				//fileStream.removeEventListener(ProgressEvent.PROGRESS, FileProgressFunc);
 				//fileStream.removeEventListener(Event.COMPLETE, FileCompleteFunc);
+				this.removeEventListener( Event.ENTER_FRAME, _loop );
 				dispatchEvent( new Event(Event.COMPLETE) )
 				return;
 			}
-			var _processTime:uint = getTimer() - showFrameStartTime;
-			var _wait:int = frameWait - _processTime;
-			if( _wait < 0 ){
-				_wait = 0;
+
+			
+			if( useFrames ){
+			} else {
+				var _processTime:uint = getTimer() - showFrameStartTime;
+				var _wait:int = frameWait - _processTime;
+				if( _wait < 0 ){
+					_wait = 0;
+				}
+				Logger.info( "wait="+ _wait )
+				setTimeout( _showFrame, _wait )
 			}
-			Logger.info( "wait="+ _wait )
-			setTimeout( _showFrame, _wait )
 		}
 
 
