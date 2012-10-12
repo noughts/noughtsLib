@@ -1,13 +1,19 @@
-/**
- * Progression 4
- * 
- * @author Copyright (C) 2007-2010 taka:nium.jp, All Rights Reserved.
- * @version 4.0.22
- * @see http://progression.jp/
- * 
- * Progression Libraries is dual licensed under the "Progression Library License" and "GPL".
- * http://progression.jp/license
- */
+/*
+
+HOW TO USE
+
+var com:SerialList = new SerialList();
+com.addCommand(
+	someFunc,
+	new ListenSignal( someSignal ),
+	function(){
+		var args:Array = this.previous.dispatchedArgs;
+		trace( args[0] );
+	}
+)
+
+*/
+
 package jp.noughts.progression.commands {
 	import jp.progression.commands.*;
 	import flash.events.Event;
