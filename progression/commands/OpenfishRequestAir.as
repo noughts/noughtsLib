@@ -1,3 +1,27 @@
+/*
+
+HOW TO USE
+
+private function _autoLogin(){
+	var slist:SerialList = new SerialList();
+	slist.addCommand(
+		OpenfishRequestAir.autoLogin(),
+		function(){
+			var result = this.latestData;
+			Logger.info( ObjectUtil.toString(result) )
+			Index.user = result.response.users[0]
+		},
+
+	null);
+	slist.execute();	
+}
+
+
+
+
+*/
+
+
 package jp.noughts.progression.commands{
 	import jp.progression.casts.*;import jp.progression.commands.display.*;import jp.progression.commands.lists.*;import jp.progression.commands.managers.*;import jp.progression.commands.media.*;import jp.progression.commands.net.*;import jp.progression.commands.tweens.*;import jp.progression.commands.*;import jp.progression.data.*;import jp.progression.events.*;import jp.progression.loader.*;import jp.progression.*;import jp.progression.scenes.*;import jp.nium.core.debug.Logger;import caurina.transitions.*;import caurina.transitions.properties.*;
 	import flash.events.*;import flash.display.*;import flash.system.*;import flash.utils.*;import flash.net.*;import flash.media.*;import flash.geom.*;import flash.text.*;import flash.media.*;import flash.system.*;import flash.ui.*;import flash.external.ExternalInterface;import flash.filters.*;
@@ -9,37 +33,43 @@ package jp.noughts.progression.commands{
 
 	public class OpenfishRequestAir extends OpenfishRequestBase {
 		
-		static public var baseUrl:String = "localhost:8080";
+		//static public var baseUrl:String = "localhost:8080";
 
 				
 		public function OpenfishRequestAir( route:String, method:String=URLRequestMethod.GET, param:Object=null ) {
-			if( !cocoafish ){
-				cocoafish = new Cocoafish( "dd", "", baseUrl );
-			}
+			//if( !cocoafish ){
+			//	cocoafish = new Cocoafish( "dd", "", baseUrl );
+			//}
 
-			var udid:String = getUDID();
+			//var udid:String = getUDID();
 
-			_route = route;
-			if( param ){
-				_param = param;
-				if( method == URLRequestMethod.POST ){
-					_param.udid = udid;
-				}
-			} else {
-				if( method == URLRequestMethod.POST ){
-					_param = {udid: udid}
-				}
-			}
+			//_route = route;
+			//if( param ){
+			//	_param = param;
+			//	if( method == URLRequestMethod.POST ){
+			//		_param.udid = udid;
+			//	}
+			//} else {
+			//	if( method == URLRequestMethod.POST ){
+			//		_param = {udid: udid}
+			//	}
+			//}
 			
-			_method = method;
+			//_method = method;
 			
-			// 親クラスを初期化する
+			//// 親クラスを初期化する
 			super( route, method, param );
+		}
+
+
+		// デバッグ用に、EncryptedLocalStore をリセットします。
+		static public function resetELS():void{
+			EncryptedLocalStore.reset();
 		}
 		
 
 		// 自動ユーザー登録コマンドを作成して返す
-		static public function autoCreateUser():SerialList{
+		static private function autoCreateUser():SerialList{
 			var slist:SerialList = new SerialList();
 			slist.addCommand(
 				function(){
@@ -47,14 +77,16 @@ package jp.noughts.progression.commands{
 				},
 				new OpenfishRequestAir( "v1/users/create.json" ),
 				function(){
+					Logger.info( "自動ユーザー登録完了" )
 					var result = this.latestData;
-					Logger.info( ObjectUtil.toString(result) );
+					//Logger.info( ObjectUtil.toString(result) );
 					var username:ByteArray = new ByteArray();
 					username.writeUTFBytes( result.response.users[0].name );
 					var password:ByteArray = new ByteArray();
 					password.writeUTFBytes( result.response.users[0].password );
 					EncryptedLocalStore.setItem( 'openfishAutoLoginUsername', username );
 					EncryptedLocalStore.setItem( 'openfishAutoLoginPassword', password );
+					slist.parent.latestData = this.latestData;
 				},
 			null);
 			return slist;
@@ -80,12 +112,17 @@ package jp.noughts.progression.commands{
 				},
 				function(){
 					slist.latestData = this.latestData;
+					if( this.latestData.meta.status=="fail" ){
+						slist.insertCommand( autoCreateUser() )
+					}
 				},
 			null);
 			return slist;
-			
-
 		}
+
+
+
+
 
 
 

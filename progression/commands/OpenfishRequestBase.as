@@ -13,7 +13,7 @@ package jp.noughts.progression.commands{
 	public class OpenfishRequestBase extends Command {
 		
 		static protected var cocoafish;
-		static protected var baseUrl:String = "localhost:8080";
+		static public var baseUrl:String = "localhost:8080";
 		protected var _route:String
 		protected var _param:Object
 		protected var _method:String;
@@ -24,10 +24,10 @@ package jp.noughts.progression.commands{
 				cocoafish = new Cocoafish( "dd", "", baseUrl );
 			}
 
-			if( param && param is ByteArray==false && param["photo"] ){
-				Logger.info( "photoパラメータがあったのでエンコードします。" )
-				param["photo"] = Base64.encode( param["photo"] )
-			}
+			//if( param && param is ByteArray==false && param["photo"] ){
+			//	Logger.info( "photoパラメータがあったのでエンコードします。" )
+			//	param["photo"] = Base64.encode( param["photo"] )
+			//}
 
 			_route = route;
 			_param = param;
