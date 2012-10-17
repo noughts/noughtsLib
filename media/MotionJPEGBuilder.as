@@ -35,7 +35,8 @@ package jp.noughts.media{
 		static private var Verbose:Boolean = false;
 
 		private var movieDesc:MovieDescription;
-		private var frameList:Vector.<ByteArray>;
+		private var _frameList:Vector.<ByteArray>;
+		public function get frameList():Vector.<ByteArray>{ return _frameList }
 		private var moviLIST:MoviLIST
 		private var headerLIST:HeaderLIST
 		private var avi:AVIStruct;
@@ -51,7 +52,7 @@ package jp.noughts.media{
     		avi = new AVIStruct();
     		this.headerLIST = new HeaderLIST();
     		moviLIST = new MoviLIST();
-    		frameList = new Vector.<ByteArray>();
+    		_frameList = new Vector.<ByteArray>();
 		}
 
 		// ブラウザの blobBuilder を返す
