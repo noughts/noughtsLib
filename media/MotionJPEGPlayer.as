@@ -132,7 +132,8 @@ package jp.noughts.media{
 			screen_bd.draw( loader )
 
 			// フレームバッファクリア
-			frames[currentFrame] = null
+			frames[currentFrame].length = 0
+			loader.unload()
 
 			currentFrame++;
 
@@ -179,14 +180,12 @@ package jp.noughts.media{
 			var x:uint = _start;
 			var xpp:uint;
 			var end:uint = 0;
-			var image:ByteArray = new ByteArray();
+			
 			var newImageBuffer:ByteArray = new ByteArray();
 			
 			var len:uint = buffer.length - _start;
 			var condition:uint = buffer.length - 1;
 			if (len > 1) {
-				image.length = 0;
-
 				Logger.info( "start search JPEG start" )
 				for (x; x < condition; ++x) {
 					xpp = x + 1;
@@ -202,12 +201,14 @@ package jp.noughts.media{
 					if( buffer[x] == 255 && buffer[xpp] == 217 ){
 						Logger.info( "JPEG end found! position="+ buffer.position )
 						end = x;
-						//image = new ByteArray();TS
+						
+						var image:ByteArray = new ByteArray();
 						buffer.position = _start;
 						buffer.readBytes(image, 0, end - _start);
 						
 						//displayImage(image);
 						// ByteArrayは参照コピーなので、クローンする
+
 						var _ba:ByteArray = new ByteArray()
 						_ba.writeBytes( image )
 						frames.push( _ba )
