@@ -62,7 +62,6 @@ package jp.noughts.media{
 			var screen_bmp:Bitmap = new Bitmap( screen_bd )
 			screen_bmp.smoothing = true
 			addChild( screen_bmp )
-			loader.contentLoaderInfo.addEventListener( Event.COMPLETE, _onLoaderLoadComplete );
 
 			fileStream = new FileStream();
 			fileStream.readAhead = 2048;
@@ -77,13 +76,16 @@ package jp.noughts.media{
 			// 初期化
 			currentFrame = 0;
 			frames = new Vector.<ByteArray>();
-			fileLoaded = false;
 			frameLefts = true;
+			buffer.length = 0
+			buffer.position = 0
+			_start = 0
 			fileStream.close();
 			// 連続再生モードの時は、一回一回表示をクリアしないようにする
 			if( continuousMode == false ){
 				screen_bd.fillRect( screen_bd.rect, 0 );
 			}
+
 
 
 			// 読み込みモードで開く（同期）
@@ -95,9 +97,21 @@ package jp.noughts.media{
 			Logger.info("file load end",buffer.length)
 
 
-			_showFrame();
+			
 			loopCounter = 0;
 			this.addEventListener( Event.ENTER_FRAME, _loop );
+			loader.contentLoaderInfo.addEventListener( Event.COMPLETE, _onLoaderLoadComplete );
+
+			if( useFrames==false ){
+				_showFrame();
+			}
+		}
+
+
+		public function stop():void{
+			this.removeEventListener( Event.ENTER_FRAME, _loop );
+			loader.contentLoaderInfo.removeEventListener( Event.COMPLETE, _onLoaderLoadComplete );
+
 		}
 
 
@@ -139,7 +153,7 @@ package jp.noughts.media{
 
 			if( frameLefts==false && currentFrame>=frames.length ){
 				trace( "再生完了!" )
-				this.removeEventListener( Event.ENTER_FRAME, _loop );
+				stop()
 				dispatchEvent( new Event(Event.COMPLETE) )
 				return;
 			}
@@ -186,20 +200,20 @@ package jp.noughts.media{
 			var len:uint = buffer.length - _start;
 			var condition:uint = buffer.length - 1;
 			if (len > 1) {
-				Logger.info( "start search JPEG start" )
+				//Logger.info( "start search JPEG start" )
 				for (x; x < condition; ++x) {
 					xpp = x + 1;
 					if (buffer[x] == 255 && buffer[xpp] == 216) {
-						Logger.info( "JPEG start found! position="+ buffer.position )
+						//Logger.info( "JPEG start found! position="+ buffer.position )
 						_start = x;
 						break;					
 					}
 				}
-				Logger.info( "start search JPEG end" )
+				//Logger.info( "start search JPEG end" )
 				for (x; x < condition; ++x) {
 					xpp = x + 1;
 					if( buffer[x] == 255 && buffer[xpp] == 217 ){
-						Logger.info( "JPEG end found! position="+ buffer.position )
+						//Logger.info( "JPEG end found! position="+ buffer.position )
 						end = x;
 						
 						var image:ByteArray = new ByteArray();
