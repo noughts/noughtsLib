@@ -176,38 +176,32 @@ package jp.noughts.media{
 
 
 		private function findImages():Boolean{
-			var x:int = _start;
-			var xpp:int;
-			var startMarker:ByteArray = new ByteArray();	
-			var end:int = 0;
+			var x:uint = _start;
+			var xpp:uint;
+			var end:uint = 0;
 			var image:ByteArray = new ByteArray();
 			var newImageBuffer:ByteArray = new ByteArray();
 			
-			var len:int = buffer.length - _start;
-			var condition:int = buffer.length - 1;
+			var len:uint = buffer.length - _start;
+			var condition:uint = buffer.length - 1;
 			if (len > 1) {
 				image.length = 0;
-				//Check for start of JPG
+
+				Logger.info( "start search JPEG start" )
 				for (x; x < condition; ++x) {
-					// get the first two bytes.
-					buffer.position = x;
-					buffer.readBytes(startMarker, 0, 2);
-					
-					//Check for end of JPG
-					if (startMarker[0] == 255 && startMarker[1] == 216) {
+					xpp = x + 1;
+					if (buffer[x] == 255 && buffer[xpp] == 216) {
+						Logger.info( "JPEG start found! position="+ buffer.position )
 						_start = x;
-						startMarker.length = 0;
 						break;					
 					}
 				}
+				Logger.info( "start search JPEG end" )
 				for (x; x < condition; ++x) {
-					// get the first two bytes.
-					buffer.position = x;
-					buffer.readBytes( startMarker, 0, 2 );
-					if (startMarker[0] == 255 && startMarker[1] == 217){
-						Logger.info( "JPEG Found! position="+ buffer.position )
+					xpp = x + 1;
+					if( buffer[x] == 255 && buffer[xpp] == 217 ){
+						Logger.info( "JPEG end found! position="+ buffer.position )
 						end = x;
-						startMarker.length = 0
 						//image = new ByteArray();TS
 						buffer.position = _start;
 						buffer.readBytes(image, 0, end - _start);
