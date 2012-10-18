@@ -47,6 +47,8 @@ package jp.noughts.media{
 		private var useFrames:Boolean
 		private var loopCounter:uint = 0;
 
+		private var frameLefts:Boolean = true;
+
 
 		// useFrames が true の時は、{$fps}フレームごとに1枚すすめる
 		public function MotionJPEGPlayer( $width:uint, $height:uint, $fps:uint, $useFrames:Boolean=false ){
@@ -76,6 +78,7 @@ package jp.noughts.media{
 			currentFrame = 0;
 			frames = new Vector.<ByteArray>();
 			fileLoaded = false;
+			frameLefts = true;
 			fileStream.close();
 			// 連続再生モードの時は、一回一回表示をクリアしないようにする
 			if( continuousMode == false ){
@@ -83,10 +86,14 @@ package jp.noughts.media{
 			}
 
 
-			Logger.info( "ファイルロード開始" )
+			// 読み込みモードで開く（同期）
+			Logger.info("file load start")
+			fileStream.open(file , FileMode.READ);
+			fileStream.position = 0;
+			fileStream.readBytes( buffer, 0, file.size )
+			fileStream.close()
+			Logger.info("file load end",buffer.length)
 
-			// 読み込みモードで開く（非同期）
-			fileStream.openAsync (file , FileMode.READ);
 
 			_showFrame();
 			loopCounter = 0;
@@ -95,15 +102,21 @@ package jp.noughts.media{
 
 
 		private function _loop(e:Event):void{
-			if( loopCounter % frameWait == 0 ){
-				_showFrame()
+			if( frameLefts ){
+				frameLefts = findImages()
 			}
-			loopCounter++
+
+			if( useFrames ){
+				if( loopCounter % frameWait == 0 ){
+					_showFrame()
+				}
+				loopCounter++
+			}
 		}
 
 
 		private function _showFrame(){
-			if( fileLoaded==false && currentFrame>=frames.length ){
+			if( frameLefts && currentFrame>=frames.length ){
 				Logger.info( "再生中バッファ待ちです。", currentFrame, frames.length )
 				setTimeout( _showFrame, 10 )
 				return;
@@ -118,14 +131,13 @@ package jp.noughts.media{
 		private function _onLoaderLoadComplete(e:Event):void{
 			screen_bd.draw( loader )
 
+			// フレームバッファクリア
+			frames[currentFrame] = null
+
 			currentFrame++;
 
-			if( fileLoaded && currentFrame>=frames.length ){
+			if( frameLefts==false && currentFrame>=frames.length ){
 				trace( "再生完了!" )
-				//loader.contentLoaderInfo.removeEventListener( Event.COMPLETE, _onLoaderLoadComplete );
-				//fileStream.removeEventListener(IOErrorEvent.IO_ERROR, FileIOErrorFunc);
-				//fileStream.removeEventListener(ProgressEvent.PROGRESS, FileProgressFunc);
-				//fileStream.removeEventListener(Event.COMPLETE, FileCompleteFunc);
 				this.removeEventListener( Event.ENTER_FRAME, _loop );
 				dispatchEvent( new Event(Event.COMPLETE) )
 				return;
@@ -171,23 +183,21 @@ package jp.noughts.media{
 			var image:ByteArray = new ByteArray();
 			var newImageBuffer:ByteArray = new ByteArray();
 			
-			var len:int = buffer.length;
-			var condition:int = len - 1;
+			var len:int = buffer.length - _start;
+			var condition:int = buffer.length - 1;
 			if (len > 1) {
-				if(_start == 0){
-					image.length = 0;
-					//Check for start of JPG
-					for (x; x < condition; ++x) {
-						// get the first two bytes.
-						buffer.position = x;
-						buffer.readBytes(startMarker, 0, 2);
-						
-						//Check for end of JPG
-						if (startMarker[0] == 255 && startMarker[1] == 216) {
-							_start = x;
-							startMarker.length = 0;
-							break;					
-						}
+				image.length = 0;
+				//Check for start of JPG
+				for (x; x < condition; ++x) {
+					// get the first two bytes.
+					buffer.position = x;
+					buffer.readBytes(startMarker, 0, 2);
+					
+					//Check for end of JPG
+					if (startMarker[0] == 255 && startMarker[1] == 216) {
+						_start = x;
+						startMarker.length = 0;
+						break;					
 					}
 				}
 				for (x; x < condition; ++x) {
@@ -195,6 +205,7 @@ package jp.noughts.media{
 					buffer.position = x;
 					buffer.readBytes( startMarker, 0, 2 );
 					if (startMarker[0] == 255 && startMarker[1] == 217){
+						Logger.info( "JPEG Found! position="+ buffer.position )
 						end = x;
 						startMarker.length = 0
 						//image = new ByteArray();TS
@@ -211,15 +222,15 @@ package jp.noughts.media{
 						//var newImageBuffer:ByteArray = new ByteArray();TS
 						
 						buffer.position = end;
-						buffer.readBytes(newImageBuffer, 0);
-						buffer.length = 0
-						buffer = newImageBuffer;
+						//buffer.readBytes(newImageBuffer, 0);
+						//buffer.length = 0
+						//buffer = newImageBuffer;
+
 						newImageBuffer.length = 0
 						newImageBuffer = null;	
 						image.length = 0;
 						
-						_start = 0;
-						x = 0;
+						_start = end;
 						return true;
 					}
 				}
