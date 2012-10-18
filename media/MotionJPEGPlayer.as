@@ -83,7 +83,7 @@ package jp.noughts.media{
 			fileStream.close();
 			// 連続再生モードの時は、一回一回表示をクリアしないようにする
 			if( continuousMode == false ){
-				screen_bd.fillRect( screen_bd.rect, 0 );
+				clearScreen()
 			}
 
 
@@ -108,10 +108,15 @@ package jp.noughts.media{
 		}
 
 
+
+		public function clearScreen():void{
+			screen_bd.fillRect( screen_bd.rect, 0 );
+		}
+
+
 		public function stop():void{
 			this.removeEventListener( Event.ENTER_FRAME, _loop );
 			loader.contentLoaderInfo.removeEventListener( Event.COMPLETE, _onLoaderLoadComplete );
-
 		}
 
 
