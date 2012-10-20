@@ -32,15 +32,29 @@ package jp.noughts.display{
 		static private  var AA_BLUR_STRENGTH:Number = 2;// ぼかしの強さ
 		static private  var AA_BLUR_QUALITY:Number = 2;// ぼかしのクオリティ
 
+		public var quality:uint = 1;
+
 		public var textWidth:uint;
 		private var _textField:TextField;
 
-		public function BitmapTextField( tfm:TextFormat=null, textWidth:uint=0 ){
+		/*
+
+		MEMO:
+
+		「g」などの下部が欠けるときは、textWidth と textHeight を大きめに設定しましょう。
+		最終的に無駄な部分はビットマップからはなくなるので問題ありません。
+
+		*/
+
+		public function BitmapTextField( tfm:TextFormat=null, textWidth:uint=0, textHeight:uint=0 ){
 			_textField = new TextField();
 			if( textWidth == 0 ){
 				_textField.autoSize = "left"
 			} else {
 				_textField.width = textWidth
+			}
+			if( textHeight != 0 ){
+				_textField.height = textHeight
 			}
 
 			if( tfm ){
@@ -61,11 +75,11 @@ package jp.noughts.display{
 			if( this.numChildren > 0 ){
 				removeChildAt( 0 );
 			}
-			var bmp:Bitmap = getAAText( false )
+			var bmp:Bitmap = getAAText()
 			addChild( bmp )
 		}
 
-		private function getAAText( bBest:Boolean=true ):Bitmap {
+		private function getAAText():Bitmap {
 			var startTime:Number = getTimer ();
 
 			// 結果BitmapDataのサイズを取得
@@ -95,22 +109,9 @@ package jp.noughts.display{
 			// → ほとんどのサイズで綺麗だけど処理重いよ :-(
 			var myMatrix:Matrix;
 			var myColor:ColorTransform;
-			if (bBest) {
-
-				// 1.拡大描画
-				myMatrix = new Matrix ();
-				myMatrix.scale (aaScale,aaScale);
-				bmpCanvas.draw (_textField,myMatrix,new ColorTransform (),null,null,true);
-
-				// 2.縮小描画
-				myColor = new ColorTransform ();
-				myColor.alphaMultiplier = 1.3;
-				myMatrix.a = myMatrix.d = 1;
-				myMatrix.scale (1 / aaScale,1 / aaScale);
-				bmpResult.draw (bmpCanvas,myMatrix,myColor,null,null,true);
-
-			} else {
-
+			if( quality==1 ){
+				bmpResult.draw( _textField )
+			} else if( quality==2 ){
 				// 1.拡大描画
 				myMatrix = new Matrix ();
 				myMatrix.scale (aaScale,aaScale);
@@ -129,6 +130,18 @@ package jp.noughts.display{
 				myMatrix.scale (1 / aaScale,1 / aaScale);
 				bmpResult.draw (bmpCanvas,myMatrix,myColor,null,null,true);
 				bmpResult.draw (bmpCanvas,myMatrix,new ColorTransform (),null,null,true);
+			} else {
+				// 1.拡大描画
+				myMatrix = new Matrix ();
+				myMatrix.scale (aaScale,aaScale);
+				bmpCanvas.draw (_textField,myMatrix,new ColorTransform (),null,null,true);
+
+				// 2.縮小描画
+				myColor = new ColorTransform ();
+				myColor.alphaMultiplier = 1.3;
+				myMatrix.a = myMatrix.d = 1;
+				myMatrix.scale (1 / aaScale,1 / aaScale);
+				bmpResult.draw (bmpCanvas,myMatrix,myColor,null,null,true);
 			}
 
 			// 後処理
