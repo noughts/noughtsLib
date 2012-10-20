@@ -10,6 +10,15 @@ package jp.noughts.media{
 
 	public class Finder extends Sprite{
 
+		private var _signals:InteractiveObjectSignalSet;
+		public function get signals():InteractiveObjectSignalSet{
+			return _signals ||= new InteractiveObjectSignalSet(this);
+		}
+
+		public function get stageVideoMode():Boolean{ return _stageVideoMode }
+		public function get camera():Camera{ return _camera }
+
+		private var _stageVideoMode:Boolean = false;
 		private var _width:uint;
 		private var _height:uint;
 		private var _video:Video;
@@ -20,7 +29,8 @@ package jp.noughts.media{
 		private var _flash_mc:Shape = new Shape();
 
 
-		function Finder( $width:uint, $height:uint ){
+		public function Finder( $width:uint, $height:uint, stageVideoMode:Boolean=false ){
+			_stageVideoMode = stageVideoMode;
 			_width = $width;
 			_height = $height;
 
@@ -29,16 +39,55 @@ package jp.noughts.media{
 			g.drawRect( 0, 0, _width, _height );
 			_flash_mc.visible = false;
 
+			_cameraId = String(Camera.names.length - 1);
 			_camera = Camera.getCamera( _cameraId );
-			_initCamera();
+			
 
-			addEventListener( Event.REMOVED_FROM_STAGE, _onRemovedFromStage );
+			signals.addedToStage.add( _onAddedToStage )
+			signals.removedFromStage.add( _onRemovedFromStage )
 		}
+
+
+		private function _onAddedToStage( e ){
+			// stageVideoチェック
+			if( _stageVideoMode ){
+				if( stage.stageVideos.length == 0 ){
+					Logger.warn( "Finder StageVideoが利用できないので通常のvideoにフォールバックします。" )
+					_stageVideoMode = false;
+				}
+			}
+			_initCamera()
+		}
+
+
+		private function _initCamera():void{
+			if( _stageVideoMode ){
+				_setStageVideo()
+			} else {
+				_setNormalVideo();
+			}
+
+		}
+
+
 
 		private function _onRemovedFromStage( e ){
-			removeEventListener( Event.REMOVED_FROM_STAGE, _onRemovedFromStage );
 			_video.attachCamera( null );
 		}
+
+
+
+		private function _setStageVideo():void{
+			var stageVideo:StageVideo = stage.stageVideos[0];
+			stageVideo.viewPort = new Rectangle( 0, 0, _width, _height );
+			
+			_camera.setMode( _width, _height, 60 );
+			stageVideo.attachCamera( _camera )
+		}
+
+
+
+
 
 		public function getImageBinary( type:String="jpg" ):ByteArray{
 			var ba:ByteArray = new ByteArray();
@@ -85,7 +134,7 @@ package jp.noughts.media{
 		}
 
 
-		private function _initCamera(){
+		private function _setNormalVideo(){
 			if( _video ){
 				removeChild( _video );
 			}
