@@ -88,7 +88,7 @@ package jp.noughts.media{
 
 		public function finish( onFinish:Function ):void{
 			Logger.info( "動画ファイナライズ開始" )
-			var streamSize = 0;
+			var streamSize:uint = 0;
 			moviLIST.aStreams = new Vector.<MoviStream>();
 			var frameCount:uint = frameList.length;
 			var frameIndices:Vector.<FrameIndex> = new Vector.<FrameIndex>;
@@ -166,7 +166,7 @@ package jp.noughts.media{
 
 		private function build( onFinish:Function ):void{
 			Logger.info( "動画ビルド開始" )
-			MotionJPEGBuilder.appendStruct( builder, avi );
+			appendStruct( avi );
 			
 			if( file ){
 				Logger.info( "動画を書き出します" )
@@ -200,7 +200,7 @@ package jp.noughts.media{
 		static private var _abtempBYTE
 		static private var _u8tempBYTE:Array = new Array();
 
-		static private function appendStruct( bb:BlobBuilder, s:Object, nest=null ){
+		private function appendStruct( s:Object, nest=null ){
 			nest = nest || 0;
 			if (!s._order) {
 				throw "Structured data must have '_order'";
@@ -216,15 +216,15 @@ package jp.noughts.media{
 				}
 				switch(fieldName.charAt(0)) {
 					case 'b': // BYTE
-						trace( bb )
+						trace( builder )
 						//_u8tempBYTE[0] = val;
-						//bb.append(_abtempBYTE);
-						bb.writeByte( val )
+						//builder.append(_abtempBYTE);
+						builder.writeByte( val )
 						break
 					case 'c': // chars
 						//trace( val )
-						//bb.append(val);
-						bb.writeMultiByte( val, "ascii" )
+						//builder.append(val);
+						builder.writeMultiByte( val, "ascii" )
 						break;
 					case 'd': // DWORD
 						//trace( val, val        & 0xff, (val >> 8)  & 0xff, (val >> 16) & 0xff, (val >> 24) & 0xff )
@@ -232,41 +232,41 @@ package jp.noughts.media{
 						//_u8tempDWORD[1] = (val >> 8)  & 0xff;
 						//_u8tempDWORD[2] = (val >> 16) & 0xff;
 						//_u8tempDWORD[3] = (val >> 24) & 0xff;
-						//bb.append(_abtempDWORD);
-						bb.writeByte( val        & 0xff )
-						bb.writeByte( (val >> 8)  & 0xff )
-						bb.writeByte( (val >> 16) & 0xff )
-						bb.writeByte( (val >> 24) & 0xff )
+						//builder.append(_abtempDWORD);
+						builder.writeByte( val        & 0xff )
+						builder.writeByte( (val >> 8)  & 0xff )
+						builder.writeByte( (val >> 16) & 0xff )
+						builder.writeByte( (val >> 24) & 0xff )
 						break;
 					case 'w': // WORD
 						//_u8tempWORD[0] =  val        & 0xff;
 						//_u8tempWORD[1] = (val >> 8)  & 0xff;
-						//bb.append(_abtempWORD);
-						bb.writeByte( val        & 0xff )
-						bb.writeByte( (val >> 8) & 0xff )
+						//builder.append(_abtempWORD);
+						builder.writeByte( val        & 0xff )
+						builder.writeByte( (val >> 8) & 0xff )
 						break
 					case 'W': // WORD(BE)
 						//_u8tempWORD[0] = (val >> 8)  & 0xff;
 						//_u8tempWORD[1] =  val        & 0xff;
-						//bb.append(_abtempWORD);
-						bb.writeByte( (val >> 8) & 0xff )
-						bb.writeByte( val        & 0xff )
+						//builder.append(_abtempWORD);
+						builder.writeByte( (val >> 8) & 0xff )
+						builder.writeByte( val        & 0xff )
 						break
 					case 'a': // Array of structured data
 						var dlen:uint = val.length;
 						for (var j = 0;j < dlen;j++) {
-							MotionJPEGBuilder.appendStruct( bb, val[j], nest+1 );
+							appendStruct( val[j], nest+1 );
 						}
 						break;
 					case 'r': // Raw(ArrayBuffer)
 						trace( val )
-						bb.append(val);
+						builder.append(val);
 						break;
 					case 's': // Structured data
-						MotionJPEGBuilder.appendStruct(bb, val, nest+1);
+						appendStruct( val, nest+1);
 						break;
 					case 'h': // Handler function
-						val( bb );
+						val( builder );
 						break;
 					default:
 						throw "Unknown data type: "+fieldName;
