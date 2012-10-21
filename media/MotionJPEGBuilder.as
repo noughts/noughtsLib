@@ -89,13 +89,13 @@ package jp.noughts.media{
 		public function finish( onFinish:Function ):void{
 			Logger.info( "動画ファイナライズ開始" )
 			var streamSize = 0;
-			this.moviLIST.aStreams = [];
+			moviLIST.aStreams = new Vector.<MoviStream>();
 			var frameCount:uint = frameList.length;
 			var frameIndices:Vector.<FrameIndex> = new Vector.<FrameIndex>;
 			var frOffset:int = 4; // 'movi' +0
 			var IndexEntryOrder:Vector.<String> = new <String>['chId', 'dwFlags', 'dwOffset', 'dwLength'];
 			for (var i = 0;i < frameCount; i++) {
-				var frsize:int = addVideoStreamData( moviLIST.aStreams, frameList[i] );
+				var frsize:int = addVideoStreamData( frameList[i] );
 				var frameIndex:FrameIndex = new FrameIndex()
 				frameIndex.dwOffset = frOffset;
 				frameIndex.dwLength = frsize - 8;
@@ -181,14 +181,14 @@ package jp.noughts.media{
 		}
 
 
-		public function addVideoStreamData( list:Array, frameBuffer:ByteArray ):int{
+		public function addVideoStreamData( frameBuffer:ByteArray ):int{
 			var stream:MoviStream = new MoviStream();
 			stream.dwSize = frameBuffer.length;
 			stream.handler = function(bb) {
 				//bb.append(frameBuffer);
 				bb.writeBytes( frameBuffer )
 			};
-			list.push( stream );
+			moviLIST.aStreams.push( stream );
 			return stream.dwSize + 8;
 		}
 
@@ -339,7 +339,7 @@ class MoviLIST{
 	var chLIST:String = 'LIST'
 	var dwSize:int = 0
 	var chFourCC:String = 'movi'
-	var aStreams:Array = null
+	var aStreams:Vector.<MoviStream> = null
 	var _order:Vector.<String> = new <String>['chLIST', 'dwSize', 'chFourCC', 'aStreams']
 
 }
