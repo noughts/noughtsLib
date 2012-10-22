@@ -7,6 +7,8 @@ package jp.noughts.media{
 	public class MotionJPEGParser {
 
 		private var bin:ByteArray;
+		private var moviList:LIST
+		private var indexChunk:AviOldIndex
 
     	public function MotionJPEGParser( $bin:ByteArray ){
     		bin = $bin;
@@ -18,11 +20,41 @@ package jp.noughts.media{
 			var data:ByteArray = new ByteArray();
 			bin.readBytes( data, 0, size-4 )
 			var riff:LIST = new LIST( size, type, data )
-			trace( ObjectUtil.toString( riff.data_array[2] ) )
+
+
+			// 内容を振り分け
+			for( var i:int=0; i<riff.data_array.length; i++ ){
+				var _data = riff.data_array[i]
+				switch( _data.fcc ){
+					case "LIST":
+						switch( _data.type ){
+							case "movi":
+								moviList = _data
+								break;
+						}
+						break;
+					case "idx1":
+						indexChunk = _data;
+						break;
+				}
+			}
+
+			//trace( ObjectUtil.toString(riff.data_array[3]) )
+
 		}
 
 
-
+		public function getImageBinaries(){
+			var out:Vector.<ByteArray> = new Vector.<ByteArray>()
+			var len:uint = moviList.data_array.length;
+			for( var i:int=0; i<len; i++ ){
+				var chk:Chunk = moviList.data_array[i];
+				if( chk.fcc=="00dc" ){
+					out.push( chk.data )
+				}
+			}
+			return out;
+		}
 
 
 
@@ -38,11 +70,11 @@ class LIST{
 	public var fcc:String = "LIST"
 	public var size:uint;
 	public var type:String;
-	private var data:ByteArray;
+	public var data:ByteArray;
 	public var data_array:Array
 
 	public function LIST( $size:uint, $type:String, $data:ByteArray ){
-		trace( "LISTを作成します。size="+ $size +" type="+ $type +" dataLength="+ $data.length )
+		//trace( "LISTを作成します。size="+ $size +" type="+ $type +" dataLength="+ $data.length )
 		size = $size;
 		type = $type;
 		data = $data;
@@ -108,10 +140,10 @@ class Chunk{
 
 	public var fcc:String;
 	var size:uint;
-	var data:ByteArray
+	public var data:ByteArray
 
 	public function Chunk( $fcc:String, $size:uint, $data:ByteArray ){
-		trace( "Chunk を作成します。fcc="+ $fcc +" size="+ $size +" dataLength="+ $data.length )
+		//trace( "Chunk を作成します。fcc="+ $fcc +" size="+ $size +" dataLength="+ $data.length )
 		fcc = $fcc;
 		size = $size;
 		data = $data;
@@ -119,8 +151,9 @@ class Chunk{
 }
 
 
-class AviOldIndex extends Chunk{
 
+
+class AviOldIndex extends Chunk{
 	public var aIndex:Vector.<AviOldIndexEntry> = new Vector.<AviOldIndexEntry>();
 
 	public function AviOldIndex( $fcc:String, $size:uint, $data:ByteArray ){
@@ -130,8 +163,7 @@ class AviOldIndex extends Chunk{
 		data.endian = Endian.LITTLE_ENDIAN;
 		var len:uint = data.length
 		while( data.position < len ){
-			trace( data.position, len )
-			var cid:uint = data.readUnsignedInt()
+			var cid:String = data.readMultiByte( 4, "ascii" )
 			var flags:uint = data.readUnsignedInt()
 			var offset:uint = data.readUnsignedInt()
 			var size:uint = data.readUnsignedInt()
@@ -141,15 +173,18 @@ class AviOldIndex extends Chunk{
 }
 
 class AviOldIndexEntry {
-	public var dwChunkId:uint;
-	public var dwFlags:uint;
-	public var dwOffset:uint;
-	public var dwSize:uint;
-	public function AviOldIndexEntry( cid:uint, flags:uint, offset:uint, size:uint ){
-		dwChunkId = cid;
-		dwFlags = flags;
-		dwOffset = offset;
-		dwSize = size;
+	public var chunkId:String;
+	public var flags:uint;
+	public var offset:uint;
+	public var size:uint;
+	public function AviOldIndexEntry( $cid:String, $flags:uint, $offset:uint, $size:uint ){
+		chunkId = $cid;
+		flags = $flags;
+		offset = $offset;
+		size = $size;
+	}
+	public function toString():String{
+		return "[AviOldIndexEntry offset="+ offset +" size="+ size +"]"
 	}
 
 }
