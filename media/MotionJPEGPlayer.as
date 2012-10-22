@@ -47,7 +47,6 @@ package jp.noughts.media{
 		private var useFrames:Boolean
 		private var loopCounter:uint = 0;
 
-		private var frameLefts:Boolean = true;
 
 
 		// useFrames が true の時は、{$fps}フレームごとに1枚すすめる
@@ -64,10 +63,6 @@ package jp.noughts.media{
 			addChild( screen_bmp )
 
 			fileStream = new FileStream();
-			fileStream.readAhead = 2048;
-			fileStream.addEventListener(IOErrorEvent.IO_ERROR, FileIOErrorFunc);
-			fileStream.addEventListener(ProgressEvent.PROGRESS, FileProgressFunc);
-			fileStream.addEventListener(Event.COMPLETE, FileCompleteFunc);
 		}
 
 
@@ -75,8 +70,6 @@ package jp.noughts.media{
 		public function loadFile( file:File, continuousMode:Boolean=false ){
 			// 初期化
 			currentFrame = 0;
-			frames = new Vector.<ByteArray>();
-			frameLefts = true;
 			buffer.length = 0
 			buffer.position = 0
 			_start = 0
@@ -95,6 +88,11 @@ package jp.noughts.media{
 			fileStream.readBytes( buffer, 0, file.size )
 			fileStream.close()
 			Logger.info("file load end",buffer.length)
+
+
+			var parser:MotionJPEGParser = new MotionJPEGParser( buffer )
+			frames = parser.getImageBinaries()
+
 
 
 			
@@ -121,10 +119,6 @@ package jp.noughts.media{
 
 
 		private function _loop(e:Event):void{
-			if( frameLefts ){
-				frameLefts = findImages()
-			}
-
 			if( useFrames ){
 				if( loopCounter % frameWait == 0 ){
 					_showFrame()
@@ -135,7 +129,7 @@ package jp.noughts.media{
 
 
 		private function _showFrame(){
-			if( frameLefts && currentFrame>=frames.length ){
+			if( currentFrame>=frames.length ){
 				Logger.info( "再生中バッファ待ちです。", currentFrame, frames.length )
 				setTimeout( _showFrame, 10 )
 				return;
@@ -156,7 +150,7 @@ package jp.noughts.media{
 
 			currentFrame++;
 
-			if( frameLefts==false && currentFrame>=frames.length ){
+			if( currentFrame>=frames.length ){
 				trace( "再生完了!" )
 				stop()
 				dispatchEvent( new Event(Event.COMPLETE) )
@@ -182,75 +176,6 @@ package jp.noughts.media{
 		}
 
 
-		// 「メディア」から「読み込みバッファ」へ読み込み中に呼び出されるイベント
-		function FileProgressFunc(e:ProgressEvent):void{
-			//trace ("パーセント:" + Math.floor(e.bytesLoaded/e.bytesTotal*100));
-			// 「読み込みバッファ」から「読み込み可能な分」を読み込む（同期実行）
-			fileStream.readBytes( buffer ,buffer.length, fileStream.bytesAvailable );
-
-			while(findImages()){
-			    //donothing
-			}
-		}
-
-
-
-		private function findImages():Boolean{
-			var x:uint = _start;
-			var xpp:uint;
-			var end:uint = 0;
-			
-			var newImageBuffer:ByteArray = new ByteArray();
-			
-			var len:uint = buffer.length - _start;
-			var condition:uint = buffer.length - 1;
-			if (len > 1) {
-				//Logger.info( "start search JPEG start" )
-				for (x; x < condition; ++x) {
-					xpp = x + 1;
-					if (buffer[x] == 255 && buffer[xpp] == 216) {
-						//Logger.info( "JPEG start found! position="+ buffer.position )
-						_start = x;
-						break;					
-					}
-				}
-				//Logger.info( "start search JPEG end" )
-				for (x; x < condition; ++x) {
-					xpp = x + 1;
-					if( buffer[x] == 255 && buffer[xpp] == 217 ){
-						//Logger.info( "JPEG end found! position="+ buffer.position )
-						end = x;
-						
-						var image:ByteArray = new ByteArray();
-						buffer.position = _start;
-						buffer.readBytes(image, 0, end - _start);
-						
-						//displayImage(image);
-						// ByteArrayは参照コピーなので、クローンする
-
-						var _ba:ByteArray = new ByteArray()
-						_ba.writeBytes( image )
-						frames.push( _ba )
-						
-						// truncate the buffer
-						//var newImageBuffer:ByteArray = new ByteArray();TS
-						
-						buffer.position = end;
-						//buffer.readBytes(newImageBuffer, 0);
-						//buffer.length = 0
-						//buffer = newImageBuffer;
-
-						newImageBuffer.length = 0
-						newImageBuffer = null;	
-						image.length = 0;
-						
-						_start = end;
-						return true;
-					}
-				}
-			}
-			return false;
-		}
 
 
 		private function displayImage(image:ByteArray):void{
@@ -259,14 +184,7 @@ package jp.noughts.media{
 		}
 
 
-		// バッファへの読み込みが、ファイルの最後尾に到達した時に呼び出されるイベント
-		function FileCompleteFunc(e:Event):void{
-			Logger.info("バッファへの読み込みが、ファイルの最後尾に到達した")
-			trace("読み込んだバイナリのサイズ:" + buffer.length)
-			// ファイルストリームを閉じる
-			fileStream.close ();
-			fileLoaded = true;
-		}
+
 
 
 
