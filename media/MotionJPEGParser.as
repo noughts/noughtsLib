@@ -1,6 +1,6 @@
 package jp.noughts.media{
 	import jp.progression.config.*;import jp.progression.debug.*;import jp.progression.casts.*;import jp.progression.commands.display.*;import jp.progression.commands.lists.*;import jp.progression.commands.managers.*;import jp.progression.commands.media.*;import jp.progression.commands.net.*;import jp.progression.commands.tweens.*;import jp.progression.commands.*;import jp.progression.data.*;import jp.progression.events.*;import jp.progression.loader.*;import jp.progression.*;import jp.progression.scenes.*;import jp.nium.core.debug.Logger;import caurina.transitions.*;import caurina.transitions.properties.*;
-
+	import mx.utils.*;
 	import flash.events.*;import flash.display.*;import flash.system.*;import flash.utils.*;import flash.net.*;import flash.media.*;import flash.geom.*;import flash.text.*;import flash.media.*;import flash.system.*;import flash.ui.*;import flash.external.ExternalInterface;import flash.filters.*;
 	import flash.filesystem.*;
 
@@ -11,15 +11,14 @@ package jp.noughts.media{
     	public function MotionJPEGParser( $bin:ByteArray ){
     		bin = $bin;
     		bin.endian = Endian.LITTLE_ENDIAN;
-    		//var riff:RIFF = new RIFF( bin )
 
-    		var fcc:String = bin.readMultiByte( 4, "ascii" )
-    		var size:uint = bin.readUnsignedInt()
-    		var type:String = bin.readMultiByte( 4, "ascii" )
-    		var data:ByteArray = new ByteArray();
-    		bin.readBytes( data, 0, size-4 )
+			var fcc:String = bin.readMultiByte( 4, "ascii" )
+			var size:uint = bin.readUnsignedInt()
+			var type:String = bin.readMultiByte( 4, "ascii" )
+			var data:ByteArray = new ByteArray();
+			bin.readBytes( data, 0, size-4 )
 			var riff:LIST = new LIST( size, type, data )
-			trace( riff )
+			trace( ObjectUtil.toString( riff.data_array[2] ) )
 		}
 
 
@@ -36,11 +35,11 @@ import flash.events.*;import flash.display.*;import flash.system.*;import flash.
 
 
 class LIST{
-	var fcc:String = "LIST"
-	var size:uint;
-	var type:String;
-	var data:ByteArray;
-	var data_array:Array
+	public var fcc:String = "LIST"
+	public var size:uint;
+	public var type:String;
+	private var data:ByteArray;
+	public var data_array:Array
 
 	public function LIST( $size:uint, $type:String, $data:ByteArray ){
 		trace( "LISTを作成します。size="+ $size +" type="+ $type +" dataLength="+ $data.length )
@@ -72,25 +71,33 @@ class LIST{
 	}
 
 	private function _findTag( bin:ByteArray ):Object{
-		trace( "findTag binLength="+ bin.length, bin.position )
+		//trace( "findTag binLength="+ bin.length, bin.position )
 		if( bin.length == bin.position ){
 			return null;
 		}
+
+
 		bin.endian = Endian.LITTLE_ENDIAN;
 		var out:Object = null;
 		var fcc:String = bin.readMultiByte( 4, "ascii" )
 		var size:uint = bin.readUnsignedInt()
 		var data:ByteArray = new ByteArray();
-		trace( fcc, bin.position, bin.length, size )
 
 		if( fcc=="LIST" ){
+			// リスト
 			var type:String = bin.readMultiByte( 4, "ascii" )
 			bin.readBytes( data, 0, size-4 )
 			out = new LIST( size, type, data )
 		} else {
 			// チャンク
 			bin.readBytes( data, 0, size )
-			out = new Chunk( fcc, size, data )
+			switch( fcc ){
+				case "idx1":
+					out = new AviOldIndex( fcc, size, data )
+					break;
+				default:
+					out = new Chunk( fcc, size, data )
+			}
 		}
 		return out;
 	}
@@ -99,7 +106,7 @@ class LIST{
 
 class Chunk{
 
-	var fcc:String;
+	public var fcc:String;
 	var size:uint;
 	var data:ByteArray
 
@@ -112,26 +119,44 @@ class Chunk{
 }
 
 
+class AviOldIndex extends Chunk{
 
-class RIFF{
-	var fcc:String;
-	var fileSize:uint;
-	var fileType:String;
-	var data:Array;
+	public var aIndex:Vector.<AviOldIndexEntry> = new Vector.<AviOldIndexEntry>();
 
-	var bin:ByteArray
-	var data_ba:ByteArray = new ByteArray();
-	var hdrlList:LIST;
-	var moviList:LIST;
+	public function AviOldIndex( $fcc:String, $size:uint, $data:ByteArray ){
+		super( $fcc, $size, $data )
 
-	function RIFF( $bin:ByteArray ){
-		bin = $bin;
-		fcc = bin.readMultiByte( 4, "ascii" )
-		fileSize = bin.readUnsignedInt()
-		fileType = bin.readMultiByte( 4, "ascii" )
-		bin.readBytes( data_ba, 0, fileSize-4 )
+		// インデックスパース
+		data.endian = Endian.LITTLE_ENDIAN;
+		var len:uint = data.length
+		while( data.position < len ){
+			trace( data.position, len )
+			var cid:uint = data.readUnsignedInt()
+			var flags:uint = data.readUnsignedInt()
+			var offset:uint = data.readUnsignedInt()
+			var size:uint = data.readUnsignedInt()
+			aIndex.push( new AviOldIndexEntry(cid,flags,offset,size) )
+		}
 	}
 }
+
+class AviOldIndexEntry {
+	public var dwChunkId:uint;
+	public var dwFlags:uint;
+	public var dwOffset:uint;
+	public var dwSize:uint;
+	public function AviOldIndexEntry( cid:uint, flags:uint, offset:uint, size:uint ){
+		dwChunkId = cid;
+		dwFlags = flags;
+		dwOffset = offset;
+		dwSize = size;
+	}
+
+}
+
+
+
+
 
 
 
