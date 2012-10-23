@@ -53,6 +53,7 @@
 			view.x = 0;
 			view.y = 0;
 			addChild( view );
+			this.mouseChildren = false;
 			// 移動先となるシーン識別子を設定します。
 			//sceneId = new SceneId( "/index" );
 
