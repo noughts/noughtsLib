@@ -91,14 +91,14 @@ class LIST{
 		ba.position = 0;
 		var out_array:Array = new Array();
 
-		for( var i:int=0; i<100; i++ ){
-			var result = _findTag( ba )
+		var result:Object
+		do {
+			result = _findTag( ba )
 			if( result ){
 				out_array.push( result )
-			} else {
-				break;
 			}
-		}
+		} while( result != null );
+
 		return out_array;
 	}
 
