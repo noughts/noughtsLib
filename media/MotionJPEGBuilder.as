@@ -43,7 +43,7 @@ package jp.noughts.media{
 		public var builder:BlobBuilder;
 		private var file:File;
 
-		private var jpegEncoderOptions:JPEGEncoderOptions = new JPEGEncoderOptions();
+		private var jpegEncoderOptions:JPEGEncoderOptions = new JPEGEncoderOptions(90);
 
     	public function MotionJPEGBuilder(){
     		this.builder = new BlobBuilder();
