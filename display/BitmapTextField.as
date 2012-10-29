@@ -116,7 +116,7 @@ package jp.noughts.display{
 			bmpResult.draw( _textField )
 
 			// 後処理
-			var bmp:Bitmap = new Bitmap(bmpResult, "never", true);
+			var bmp:Bitmap = new Bitmap( bmpResult );
 			return bmp;
 		}
 
