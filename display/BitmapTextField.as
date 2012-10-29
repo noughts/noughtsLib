@@ -60,8 +60,10 @@ package jp.noughts.display{
 			if( tfm ){
 				if( tfm.font==null ){
 					tfm.font = "Hiragino Kaku Gothic ProN"
+				} else {
+					_textField.embedFonts = true;
 				}
-				_textField.defaultTextFormat = tfm;	
+				_textField.defaultTextFormat = tfm;
 			}
 		}
 
