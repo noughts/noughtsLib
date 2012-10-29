@@ -48,6 +48,7 @@ package jp.noughts.display{
 
 		public function BitmapTextField( tfm:TextFormat=null, textWidth:uint=0, textHeight:uint=0 ){
 			_textField = new TextField();
+			_textField.multiline = true
 			if( textWidth == 0 ){
 				_textField.autoSize = "left"
 			} else {
@@ -67,9 +68,15 @@ package jp.noughts.display{
 			}
 		}
 
+
+
 		public function set text( val:String ):void{
 			_textField.text = val;
 			update()
+		}
+
+		public function set wordWrap( val:Boolean ):void{
+			_textField.wordWrap = val;
 		}
 
 
