@@ -80,8 +80,42 @@ package jp.noughts.display{
 		}
 
 		private function getAAText():Bitmap {
-			var startTime:Number = getTimer ();
+			if( quality==1 ){
+				return simpleDraw();
+			} else {
+				return complexDraw();
+			}
+		}
 
+
+
+
+		private function simpleDraw():Bitmap {
+			// 結果BitmapDataのサイズを取得
+			// 中央ぞろえにしたときにバグるのを回避
+			var my_fmt:TextFormat = _textField.getTextFormat();
+			var aaWidth:Number;
+			if (my_fmt["align"] == "center") {
+				//var aaWidth:Number = _textField.width + AA_MARGIN_WIDTH;
+				aaWidth = _textField.width;
+			} else {
+				aaWidth = (_textField.textWidth || _textField.width);
+			}
+
+			var aaHeight:Number = (_textField.textHeight || _textField.height) * 1.2;
+			var bmpResult:BitmapData = new BitmapData (aaWidth, aaHeight, true, 0x00000000);
+			bmpResult.draw( _textField )
+
+			// 後処理
+			var bmp:Bitmap = new Bitmap(bmpResult, "never", true);
+			return bmp;
+		}
+
+
+
+
+
+		private function complexDraw():Bitmap {
 			// 結果BitmapDataのサイズを取得
 			// 中央ぞろえにしたときにバグるのを回避
 			var my_fmt:TextFormat = _textField.getTextFormat();
@@ -151,5 +185,14 @@ package jp.noughts.display{
 			var bmp:Bitmap = new Bitmap(bmpResult, "never", true);
 			return bmp;
 		}
+
+
+
+
+
+
+
+
+
 	}
 }
