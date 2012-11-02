@@ -19,7 +19,7 @@ package jp.noughts.display{
 	import flash.display.*;
 	import flash.geom.*;
 	import flash.filters.BlurFilter;
-	import flash.utils.getTimer;
+	import flash.utils.*;
 
 	public class BitmapTextField extends Sprite{
 
@@ -68,8 +68,6 @@ package jp.noughts.display{
 			if( tfm ){
 				if( tfm.font==null ){
 					tfm.font = "Hiragino Kaku Gothic ProN"
-				} else {
-					_textField.embedFonts = true;
 				}
 				_textField.defaultTextFormat = tfm;
 			}
@@ -87,6 +85,9 @@ package jp.noughts.display{
 
 		public function set wordWrap( val:Boolean ):void{
 			_textField.wordWrap = val;
+		}
+		public function set embedFonts( val:Boolean ):void{
+			_textField.embedFonts = val
 		}
 
 
@@ -126,7 +127,7 @@ package jp.noughts.display{
 			bmpResult.draw( _textField )
 
 			// 後処理
-			var bmp:Bitmap = new Bitmap( bmpResult );
+			var bmp:Bitmap = new Bitmap( bmpResult, "never", true );
 			return bmp;
 		}
 
@@ -201,7 +202,7 @@ package jp.noughts.display{
 			bmpCanvas.dispose ();
 
 			//trace ("scale:" + aaScale + " time:" + (getTimer () - startTime));
-			var bmp:Bitmap = new Bitmap(bmpResult, "never", true);
+			var bmp:Bitmap = new Bitmap( bmpResult, "never", true );
 			return bmp;
 		}
 
