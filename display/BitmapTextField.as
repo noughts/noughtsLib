@@ -55,6 +55,7 @@ package jp.noughts.display{
 			_textHeight = textHeight;
 
 			_textField = new TextField();
+			_textField.multiline = true
 			if( textWidth == 0 ){
 				_textField.autoSize = "left"
 			} else {
@@ -67,10 +68,14 @@ package jp.noughts.display{
 			if( tfm ){
 				if( tfm.font==null ){
 					tfm.font = "Hiragino Kaku Gothic ProN"
+				} else {
+					_textField.embedFonts = true;
 				}
-				_textField.defaultTextFormat = tfm;	
+				_textField.defaultTextFormat = tfm;
 			}
 		}
+
+
 
 		public function set text( val:String ):void{
 			_textField.text = val;
@@ -79,6 +84,11 @@ package jp.noughts.display{
 		public function get text():String{
 			return _textField.text;
 		}
+
+		public function set wordWrap( val:Boolean ):void{
+			_textField.wordWrap = val;
+		}
+
 
 		public function update():void{
 			if( this.numChildren > 0 ){
@@ -89,8 +99,42 @@ package jp.noughts.display{
 		}
 
 		private function getAAText():Bitmap {
-			var startTime:Number = getTimer ();
+			if( quality==1 ){
+				return simpleDraw();
+			} else {
+				return complexDraw();
+			}
+		}
 
+
+
+
+		private function simpleDraw():Bitmap {
+			// 結果BitmapDataのサイズを取得
+			// 中央ぞろえにしたときにバグるのを回避
+			var my_fmt:TextFormat = _textField.getTextFormat();
+			var aaWidth:Number;
+			if (my_fmt["align"] == "center") {
+				//var aaWidth:Number = _textField.width + AA_MARGIN_WIDTH;
+				aaWidth = _textField.width;
+			} else {
+				aaWidth = (_textField.textWidth || _textField.width);
+			}
+
+			var aaHeight:Number = (_textField.textHeight || _textField.height) * 1.2;
+			var bmpResult:BitmapData = new BitmapData (aaWidth, aaHeight, true, 0x00000000);
+			bmpResult.draw( _textField )
+
+			// 後処理
+			var bmp:Bitmap = new Bitmap( bmpResult );
+			return bmp;
+		}
+
+
+
+
+
+		private function complexDraw():Bitmap {
 			// 結果BitmapDataのサイズを取得
 			// 中央ぞろえにしたときにバグるのを回避
 			var my_fmt:TextFormat = _textField.getTextFormat();
