@@ -33,9 +33,12 @@ package jp.noughts.display{
 		static private  var AA_BLUR_QUALITY:Number = 2;// ぼかしのクオリティ
 
 		public var quality:uint = 1;
-
-		public var textWidth:uint;
 		private var _textField:TextField;
+
+		// clone用
+		private var _tfm:TextFormat;
+		private var _textWidth:uint;
+		private var _textHeight:uint;
 
 		/*
 
@@ -47,6 +50,10 @@ package jp.noughts.display{
 		*/
 
 		public function BitmapTextField( tfm:TextFormat=null, textWidth:uint=0, textHeight:uint=0 ){
+			_tfm = tfm;
+			_textWidth = textWidth
+			_textHeight = textHeight;
+
 			_textField = new TextField();
 			if( textWidth == 0 ){
 				_textField.autoSize = "left"
@@ -69,7 +76,9 @@ package jp.noughts.display{
 			_textField.text = val;
 			update()
 		}
-
+		public function get text():String{
+			return _textField.text;
+		}
 
 		public function update():void{
 			if( this.numChildren > 0 ){
@@ -151,5 +160,24 @@ package jp.noughts.display{
 			var bmp:Bitmap = new Bitmap(bmpResult, "never", true);
 			return bmp;
 		}
+
+
+		public function clone():BitmapTextField{
+			var btf:BitmapTextField = new BitmapTextField( _tfm, _textWidth, _textHeight )
+			btf.text = this.text;
+			return btf;
+		}
+
+
 	}
 }
+
+
+
+
+
+
+
+
+
+
