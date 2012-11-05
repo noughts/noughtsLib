@@ -19,7 +19,7 @@ package jp.noughts.display{
 	import flash.display.*;
 	import flash.geom.*;
 	import flash.filters.BlurFilter;
-	import flash.utils.getTimer;
+	import flash.utils.*;
 
 	public class BitmapTextField extends Sprite{
 
@@ -33,9 +33,12 @@ package jp.noughts.display{
 		static private  var AA_BLUR_QUALITY:Number = 2;// ぼかしのクオリティ
 
 		public var quality:uint = 1;
-
-		public var textWidth:uint;
 		private var _textField:TextField;
+
+		// clone用
+		private var _tfm:TextFormat;
+		private var _textWidth:uint;
+		private var _textHeight:uint;
 
 		/*
 
@@ -47,6 +50,10 @@ package jp.noughts.display{
 		*/
 
 		public function BitmapTextField( tfm:TextFormat=null, textWidth:uint=0, textHeight:uint=0 ){
+			_tfm = tfm;
+			_textWidth = textWidth
+			_textHeight = textHeight;
+
 			_textField = new TextField();
 			_textField.multiline = true
 			if( textWidth == 0 ){
@@ -61,8 +68,6 @@ package jp.noughts.display{
 			if( tfm ){
 				if( tfm.font==null ){
 					tfm.font = "Hiragino Kaku Gothic ProN"
-				} else {
-					_textField.embedFonts = true;
 				}
 				_textField.defaultTextFormat = tfm;
 			}
@@ -74,9 +79,15 @@ package jp.noughts.display{
 			_textField.text = val;
 			update()
 		}
+		public function get text():String{
+			return _textField.text;
+		}
 
 		public function set wordWrap( val:Boolean ):void{
 			_textField.wordWrap = val;
+		}
+		public function set embedFonts( val:Boolean ):void{
+			_textField.embedFonts = val
 		}
 
 
@@ -116,7 +127,7 @@ package jp.noughts.display{
 			bmpResult.draw( _textField )
 
 			// 後処理
-			var bmp:Bitmap = new Bitmap( bmpResult );
+			var bmp:Bitmap = new Bitmap( bmpResult, "never", true );
 			return bmp;
 		}
 
@@ -191,17 +202,27 @@ package jp.noughts.display{
 			bmpCanvas.dispose ();
 
 			//trace ("scale:" + aaScale + " time:" + (getTimer () - startTime));
-			var bmp:Bitmap = new Bitmap(bmpResult, "never", true);
+			var bmp:Bitmap = new Bitmap( bmpResult, "never", true );
 			return bmp;
 		}
 
 
-
-
-
-
-
+		public function clone():BitmapTextField{
+			var btf:BitmapTextField = new BitmapTextField( _tfm, _textWidth, _textHeight )
+			btf.text = this.text;
+			return btf;
+		}
 
 
 	}
 }
+
+
+
+
+
+
+
+
+
+
