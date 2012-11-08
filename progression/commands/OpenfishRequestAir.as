@@ -75,7 +75,7 @@ package jp.noughts.progression.commands{
 				function(){
 					Logger.info( "自動ユーザー登録します。" )
 				},
-				new OpenfishRequestAir( "v1/users/create.json" ),
+				new OpenfishRequest( "v1/users/create.json", "GET" ),
 				function(){
 					Logger.info( "自動ユーザー登録完了" )
 					var result = this.latestData;
@@ -105,7 +105,7 @@ package jp.noughts.progression.commands{
 					var username_str:String = storedUsername ? storedUsername.readUTFBytes( storedUsername.length ) : "";
 					var password_str:String = storedPassword ? storedPassword.readUTFBytes( storedPassword.length ) : "";
 
-					slist.insertCommand( new OpenfishRequestAir( "v1/users/login.json", URLRequestMethod.POST, {
+					slist.insertCommand( new OpenfishRequest( "v1/users/login.json", URLRequestMethod.POST, {
 						login: username_str,
 						password: password_str
 					} ));
