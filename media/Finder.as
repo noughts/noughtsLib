@@ -22,6 +22,7 @@ package jp.noughts.media{
 		private var _width:uint;
 		private var _height:uint;
 		private var _video:Video;
+		private var _stageVideo:StageVideo
 		private var _camera:Camera;
 		private var _bd:BitmapData;
 		private var _preview_bmp:Bitmap;
@@ -39,6 +40,7 @@ package jp.noughts.media{
 			g.drawRect( 0, 0, _width, _height );
 			_flash_mc.visible = false;
 
+			Logger.info( Camera.names )
 			_cameraId = String(Camera.names.length - 1);
 			_camera = Camera.getCamera( _cameraId );
 			
@@ -52,12 +54,24 @@ package jp.noughts.media{
 			// stageVideoチェック
 			if( _stageVideoMode ){
 				if( stage.stageVideos.length == 0 ){
-					Logger.warn( "Finder StageVideoが利用できないので通常のvideoにフォールバックします。" )
+					Logger.warn( "Finder StageVideo が利用できないので通常のvideoにフォールバックします。" )
 					_stageVideoMode = false;
 				}
 			}
 			_initCamera()
 		}
+
+
+		private function _onRemovedFromStage( e ){
+			Logger.info( "Finder _onRemovedFromStage" )
+			if( _video ){
+				_video.attachCamera( null );
+			}
+			if( _stageVideo ){
+				_stageVideo.attachCamera( null )
+			}
+		}
+
 
 
 		private function _initCamera():void{
@@ -71,18 +85,15 @@ package jp.noughts.media{
 
 
 
-		private function _onRemovedFromStage( e ){
-			_video.attachCamera( null );
-		}
 
 
 
 		private function _setStageVideo():void{
-			var stageVideo:StageVideo = stage.stageVideos[0];
-			stageVideo.viewPort = new Rectangle( 0, 0, _width, _height );
+			_stageVideo = stage.stageVideos[0];
+			_stageVideo.viewPort = new Rectangle( 0, 0, _width, _height );
 			
 			_camera.setMode( _width, _height, 60 );
-			stageVideo.attachCamera( _camera )
+			_stageVideo.attachCamera( _camera )
 		}
 
 
@@ -133,6 +144,29 @@ package jp.noughts.media{
 			_initCamera();			
 		}
 
+		public function changeToFrontCamera():void{
+			if( _cameraId == "1"){
+				return;
+			}
+			if( Camera.names.length == 1 ){
+				return;
+			}
+			_cameraId = "1"
+			_camera = Camera.getCamera( _cameraId );
+			_initCamera();			
+		}
+
+		public function changeToBackCamera():void{
+			if( _cameraId == "0"){
+				return;
+			}
+			if( Camera.names.length == 1 ){
+				return;
+			}
+			_cameraId = "0"
+			_camera = Camera.getCamera( _cameraId );
+			_initCamera();			
+		}
 
 		private function _setNormalVideo(){
 			if( _video ){
