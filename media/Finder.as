@@ -68,6 +68,7 @@ package jp.noughts.media{
 				_video.attachCamera( null );
 			}
 			if( _stageVideo ){
+				_stageVideo.viewPort = null
 				_stageVideo.attachCamera( null )
 			}
 		}
@@ -89,6 +90,7 @@ package jp.noughts.media{
 
 
 		private function _setStageVideo():void{
+			Logger.info( "stage.stageVideos", stage.stageVideos, stage.stageVideos.length )
 			_stageVideo = stage.stageVideos[0];
 			_stageVideo.viewPort = new Rectangle( 0, 0, _width, _height );
 			
