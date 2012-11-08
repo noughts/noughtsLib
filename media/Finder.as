@@ -51,6 +51,7 @@ package jp.noughts.media{
 
 
 		private function _onAddedToStage( e ){
+			Logger.info( "Finder _onAddedToStage" )
 			// stageVideoチェック
 			if( _stageVideoMode ){
 				if( stage.stageVideos.length == 0 ){
@@ -68,8 +69,9 @@ package jp.noughts.media{
 				_video.attachCamera( null );
 			}
 			if( _stageVideo ){
-				_stageVideo.viewPort = null
-				_stageVideo.attachCamera( null )
+				// _stageVideo.attachCamera(null)すると starling も止まってしまうので、
+				// 画質を落として負荷軽減
+				_camera.setMode( 1, 1, 1 );
 			}
 		}
 
