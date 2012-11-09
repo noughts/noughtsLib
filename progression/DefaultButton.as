@@ -86,6 +86,15 @@
 		}
 
 
+		// ぽこっと表示させる
+		public function popIn():void{
+			if( this.visible == false ){
+				this.visible = true;
+				this.scaleX = this.scaleY = 0;
+				Tweener.addTween( this, {"_scale":1, time:0.33, transition:"easeOutBack"} )
+			}
+		}
+
 
 		/**
 		 * IExecutable オブジェクトが AddChild コマンド、または AddChildAt コマンド経由で表示リストに追加された場合に送出されます。
