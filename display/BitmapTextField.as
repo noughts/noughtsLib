@@ -40,6 +40,9 @@ package jp.noughts.display{
 		private var _textWidth:uint;
 		private var _textHeight:uint;
 
+		private var _bmp:Bitmap;
+		//public function get bmp():Bitmap{ return _bmp }
+
 		/*
 
 		MEMO:
@@ -74,6 +77,17 @@ package jp.noughts.display{
 		}
 
 
+		// 指定したサイズにscaleを調整する
+		public function fit( $width:uint, $height:uint ):void{
+			if( _bmp.width > $width ){
+				_bmp.scaleX = $width / _bmp.width
+			}
+			if( _bmp.height > $height ){
+				_bmp.scaleY = $height / _bmp.height
+			}
+		}
+
+
 
 		public function set text( val:String ):void{
 			_textField.text = val;
@@ -95,8 +109,8 @@ package jp.noughts.display{
 			if( this.numChildren > 0 ){
 				removeChildAt( 0 );
 			}
-			var bmp:Bitmap = getAAText()
-			addChild( bmp )
+			_bmp = getAAText()
+			addChild( _bmp )
 		}
 
 		private function getAAText():Bitmap {
@@ -126,11 +140,24 @@ package jp.noughts.display{
 			var bmpResult:BitmapData = new BitmapData (aaWidth, aaHeight, true, 0x00000000);
 			bmpResult.draw( _textField )
 
+			// 周りの透明部分をトリム
+			var content_bd:BitmapData = trimWhiteSpace( bmpResult )
+
 			// 後処理
-			var bmp:Bitmap = new Bitmap( bmpResult, "never", true );
+			var bmp:Bitmap = new Bitmap( content_bd, "never", true );
 			return bmp;
 		}
 
+
+		// BitmapData の周りの透明部分をトリムする
+		private function trimWhiteSpace( source_bd:BitmapData ):BitmapData{
+			var content_rect:Rectangle = source_bd.getColorBoundsRect( 0xFF000000, 0x00000000, false )
+			trace(content_rect)
+
+			var content_bd:BitmapData = new BitmapData( content_rect.width, content_rect.height, true, 0 )
+			content_bd.copyPixels( source_bd, content_rect, new Point() )
+			return content_bd;
+		}
 
 
 
@@ -163,9 +190,7 @@ package jp.noughts.display{
 			// → ほとんどのサイズで綺麗だけど処理重いよ :-(
 			var myMatrix:Matrix;
 			var myColor:ColorTransform;
-			if( quality==1 ){
-				bmpResult.draw( _textField )
-			} else if( quality==2 ){
+			if( quality==2 ){
 				// 1.拡大描画
 				myMatrix = new Matrix ();
 				myMatrix.scale (aaScale,aaScale);
