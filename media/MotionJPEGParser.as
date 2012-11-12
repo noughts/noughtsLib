@@ -38,19 +38,30 @@ package jp.noughts.media{
 						break;
 				}
 			}
-
 			//trace( ObjectUtil.toString(riff.data_array[3]) )
-
 		}
 
 
-		public function getImageBinaries(){
+		public function getImageBinaries():Vector.<ByteArray>{
 			var out:Vector.<ByteArray> = new Vector.<ByteArray>()
 			var len:uint = moviList.data_array.length;
 			for( var i:int=0; i<len; i++ ){
 				var chk:Chunk = moviList.data_array[i];
 				if( chk.fcc=="00dc" ){
 					out.push( chk.data )
+				}
+			}
+			return out;
+		}
+
+
+		public function getAudioData():ByteArray{
+			var out:ByteArray = new ByteArray();
+			var len:uint = moviList.data_array.length;
+			for( var i:int=0; i<len; i++ ){
+				var chk:Chunk = moviList.data_array[i];
+				if( chk.fcc=="01wb" ){
+					out.writeBytes( chk.data, 0, chk.data.length )
 				}
 			}
 			return out;
