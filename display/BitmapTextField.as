@@ -125,6 +125,10 @@ package jp.noughts.display{
 
 
 		private function simpleDraw():Bitmap {
+			if( _textField.text == "" ){
+				return new Bitmap( new BitmapData(1,1) )
+			}
+
 			// 結果BitmapDataのサイズを取得
 			// 中央ぞろえにしたときにバグるのを回避
 			var my_fmt:TextFormat = _textField.getTextFormat();
