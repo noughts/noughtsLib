@@ -17,6 +17,8 @@ package jp.noughts.media{
 
 		public function get stageVideoMode():Boolean{ return _stageVideoMode }
 		public function get camera():Camera{ return _camera }
+		public function get bd():BitmapData{ return _bd }
+
 
 		private var _stageVideoMode:Boolean = false;
 		private var _width:uint;
@@ -105,17 +107,17 @@ package jp.noughts.media{
 		}
 
 
-		public function shutter():void{
-			_video.attachCamera( null );
-
+		public function capture():void{
 			_bd = new BitmapData( _width, _height );
 			_bd.draw( this );
 			_preview_bmp = new Bitmap( _bd );
+		}
 
-			removeChild( _video );
-			addChild( _preview_bmp );
 
-			// フラッシュアニメ
+		// capture してフラッシュアニメ
+		public function shutter():void{
+			capture()
+
 			_flash_mc.visible = true;
 			_flash_mc.alpha = 1;
 			addChild( _flash_mc );
