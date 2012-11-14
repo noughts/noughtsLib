@@ -30,7 +30,7 @@ package jp.noughts.media{
 		private var _flash_mc:Shape = new Shape();
 
 
-		public function Finder( $width:uint, $height:uint, stageVideoMode:Boolean=false ){
+		public function Finder( $width:uint, $height:uint, stageVideoMode:Boolean=false, cameraId:String=null ){
 			_stageVideoMode = stageVideoMode;
 			_width = $width;
 			_height = $height;
@@ -41,7 +41,11 @@ package jp.noughts.media{
 			_flash_mc.visible = false;
 
 			Logger.info( Camera.names )
-			_cameraId = String(Camera.names.length - 1);
+			if( cameraId ){
+				_cameraId = cameraId;
+			} else {
+				_cameraId = String(Camera.names.length - 1);
+			}
 			_camera = Camera.getCamera( _cameraId );
 			
 
@@ -101,15 +105,6 @@ package jp.noughts.media{
 		}
 
 
-
-
-
-		public function getImageBinary( type:String="jpg" ):ByteArray{
-			var ba:ByteArray = new ByteArray();
-			_bd.encode( new Rectangle(0,0,290,290), new JPEGEncoderOptions(), ba );	
-			return ba;		
-		}
-
 		public function shutter():void{
 			_video.attachCamera( null );
 
@@ -126,6 +121,16 @@ package jp.noughts.media{
 			addChild( _flash_mc );
 			Tweener.addTween( _flash_mc, {"_autoAlpha":0, time:0.66, transition:"easeInOutQuart"} );
 		}
+
+
+
+		public function getImageBinary( type:String="jpg", quality:uint=80 ):ByteArray{
+			var ba:ByteArray = new ByteArray();
+			_bd.encode( _bd.rect, new JPEGEncoderOptions(quality), ba );	
+			return ba;		
+		}
+
+
 
 
 		public function reset():void{
