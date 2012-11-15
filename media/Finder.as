@@ -19,6 +19,9 @@ package jp.noughts.media{
 		public function get camera():Camera{ return _camera }
 		public function get bd():BitmapData{ return _bd }
 
+		// ステージから削除された時に処理を止めるか？
+		public var disableOnRemovedFromStage:Boolean = true;
+
 
 		private var _stageVideoMode:Boolean = false;
 		private var _width:uint;
@@ -30,6 +33,7 @@ package jp.noughts.media{
 		private var _preview_bmp:Bitmap;
 		private var _cameraId:String = "0";
 		private var _flash_mc:Shape = new Shape();
+		private var _initialized:Boolean = false;
 
 
 		public function Finder( $width:uint, $height:uint, stageVideoMode:Boolean=false, cameraId:String=null ){
@@ -71,13 +75,8 @@ package jp.noughts.media{
 
 		private function _onRemovedFromStage( e ){
 			Logger.info( "Finder _onRemovedFromStage" )
-			if( _video ){
+			if( disableOnRemovedFromStage ){
 				_video.attachCamera( null );
-			}
-			if( _stageVideo ){
-				// _stageVideo.attachCamera(null)すると starling も止まってしまうので、
-				// 画質を落として負荷軽減
-				_camera.setMode( 1, 1, 1 );
 			}
 		}
 
@@ -180,6 +179,13 @@ package jp.noughts.media{
 		}
 
 		private function _setNormalVideo(){
+			if( _initialized ){
+				if( disableOnRemovedFromStage ){
+					_video.attachCamera( _camera );
+				}
+				return;
+			}
+
 			if( _video ){
 				removeChild( _video );
 			}
@@ -188,7 +194,7 @@ package jp.noughts.media{
 			_video.smoothing = true;
 			
 			// カメラ設定 いじると、flvの再生時に不具合が起こるので慎重に！
-			_camera.setMode( 1024, 768, 30 );
+			_camera.setMode( 640, 640, 30 );
 
 
 			var frameSize:Rectangle = new Rectangle( 0, 0, _width, _height );
@@ -203,6 +209,7 @@ package jp.noughts.media{
 			_video.attachCamera( _camera );
 			addChild( _video );
 			this.scrollRect = frameSize
+			_initialized = true;
 		}	
 
 
