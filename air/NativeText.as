@@ -146,7 +146,7 @@ package jp.noughts.air{
 		
 		private function onRemoveFromStage(e:Event):void{
 			this.removeEventListener( Event.ENTER_FRAME, _onEnterFrame );
-			this.st.dispose();
+			//this.st.dispose();
 			this.removeEventListener( FocusEvent.FOCUS_IN, _onFocusIn );
 			this.removeEventListener( FocusEvent.FOCUS_OUT, _onFocusOut );
 			this.removeEventListener( Event.CHANGE, _onChangeText );

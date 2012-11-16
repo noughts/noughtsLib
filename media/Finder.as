@@ -194,7 +194,7 @@ package jp.noughts.media{
 			_video.smoothing = true;
 			
 			// カメラ設定 いじると、flvの再生時に不具合が起こるので慎重に！
-			_camera.setMode( 640, 640*1.3333, 30 );
+			_camera.setMode( 640*1.3333, 640, 30 );
 
 
 			var frameSize:Rectangle = new Rectangle( 0, 0, _width, _height );
