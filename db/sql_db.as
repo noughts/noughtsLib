@@ -1,0 +1,4 @@
+package jp.noughts.db
+{
+	public namespace sql_db = "http://withincode.com/sql/db";
+}
