@@ -476,18 +476,21 @@
 			stmt.execute();
 		}
 
-		sql_db function loadItems(clazz:Class, sql:String, ...params:Array):Array
-		{
+		sql_db function loadItems(clazz:Class, sql:String, ...params:Array):Array{
 			var stmt:SQLStatement = new SQLStatement();
 			stmt.sqlConnection = connection;
 			stmt.text = sql;
 			stmt.itemClass = clazz;
 
-			if (params.length == 1 && params[0] is Array)
+			if (params.length == 1 && params[0] is Array){
 				params = params[0];
+			}
 
-			for (var i:int = 0; i < params.length; i++)
-				//stmt.parameters[i] = params[i];
+			for (var i:int = 0; i < params.length; i++){
+				if( params[i] ){
+					stmt.parameters[i] = params[i];
+				}
+			}
 
 			stmt.execute();
 			var result:SQLResult = stmt.getResult();
