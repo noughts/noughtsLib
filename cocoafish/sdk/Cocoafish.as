@@ -17,15 +17,15 @@ package jp.noughts.cocoafish.sdk {
 	//import mx.utils.URLUtil;
 	import jp.nium.utils.ArrayUtil;
 	
-	import org.iotashan.oauth.IOAuthSignatureMethod;
-	import org.iotashan.oauth.OAuthConsumer;
-	import org.iotashan.oauth.OAuthRequest;
-	import org.iotashan.oauth.OAuthSignatureMethod_HMAC_SHA1;
+	//import org.iotashan.oauth.IOAuthSignatureMethod;
+	//import org.iotashan.oauth.OAuthConsumer;
+	//import org.iotashan.oauth.OAuthRequest;
+	//import org.iotashan.oauth.OAuthSignatureMethod_HMAC_SHA1;
 	
 	public class Cocoafish {
 		var appKey:String = null;
 		var sessionId:String = null;
-		var consumer:OAuthConsumer = null;
+		var consumer:Object = null;
 		var listeners:Array = null;
 		var apiBaseURL:String = null;
 		
@@ -33,7 +33,7 @@ package jp.noughts.cocoafish.sdk {
 			if(oauthSecret == "") {
 				this.appKey = key;
 			} else {
-				consumer = new OAuthConsumer(key, oauthSecret);
+				//consumer = new OAuthConsumer(key, oauthSecret);
 			}
 			if(baseURL) {
 				apiBaseURL = baseURL;
@@ -124,7 +124,7 @@ package jp.noughts.cocoafish.sdk {
 					reqURL += Constants.PARAMETER_DELIMITER + Constants.SESSION_ID + Constants.PARAMETER_EQUAL + this.sessionId;
 				}
 				request = new URLRequest(reqURL);
-			} else if(consumer != null) {
+			} else if( consumer != null ) {
 				if(photoRef != null) {
 					request = this.buildOAuthRequest(reqURL, httpMethod, null);
 				} else {
@@ -246,19 +246,20 @@ package jp.noughts.cocoafish.sdk {
 		}
 		
 		private function buildOAuthRequest(url:String, method:String, params:Object) : URLRequest {
-			//append session id
-			if(this.sessionId != null) {
-				if(params == null) {
-					params = new Object();
-				}
-				params[Constants.SESSION_ID] = this.sessionId;
-			}
+			return new URLRequest(url)
+			////append session id
+			//if(this.sessionId != null) {
+			//	if(params == null) {
+			//		params = new Object();
+			//	}
+			//	params[Constants.SESSION_ID] = this.sessionId;
+			//}
 			
-			var oauthRequest:OAuthRequest = new OAuthRequest(method, url, params, consumer, null);
-			var signatureMethod:IOAuthSignatureMethod = new OAuthSignatureMethod_HMAC_SHA1();
-			var oauthURL:String = oauthRequest.buildRequest(signatureMethod, OAuthRequest.RESULT_TYPE_URL_STRING);
-			var request:URLRequest = new URLRequest(oauthURL);
-			return request;
+			//var oauthRequest:OAuthRequest = new OAuthRequest(method, url, params, consumer, null);
+			//var signatureMethod:IOAuthSignatureMethod = new OAuthSignatureMethod_HMAC_SHA1();
+			//var oauthURL:String = oauthRequest.buildRequest(signatureMethod, OAuthRequest.RESULT_TYPE_URL_STRING);
+			//var request:URLRequest = new URLRequest(oauthURL);
+			//return request;
 		}
 		
 		private function completeCallback(data:String, callback:Function):void {
