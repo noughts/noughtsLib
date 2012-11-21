@@ -14,6 +14,7 @@ package jp.noughts.progression.commands{
 		
 		static protected var cocoafish;
 		static public var baseUrl:String = "localhost:8080";
+		static public var verbose:Boolean = false
 		protected var _route:String
 		protected var _param:Object
 		protected var _method:String;
@@ -57,6 +58,10 @@ package jp.noughts.progression.commands{
 			super.latestData = data;
 			_destroyTimer();// を破棄する
 			super.executeComplete();// 処理を終了する
+
+			if( verbose ){
+				Logger.info( ObjectUtil.toString(data) )
+			}
 		}
 
 
