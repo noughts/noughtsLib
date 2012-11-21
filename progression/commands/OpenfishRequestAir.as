@@ -129,19 +129,19 @@ package jp.noughts.progression.commands{
 		// UDIDを取得
 		// あればそのまま取得
 		// なければ作成して、アプリ削除しても残るデータ領域に保存
-		//public function getUDID():String{
-		//	var storedValue:ByteArray = EncryptedLocalStore.getItem('udid_ver20120725');
-		//	if( storedValue ){
-		//		return storedValue.readUTFBytes( storedValue.length );
-		//	} else {
-		//		// 作成して保存
-		//		var udid:String = UIDUtil.createUID();
-		//		var bytes:ByteArray = new ByteArray();
-		//		bytes.writeUTFBytes( udid );
-		//		EncryptedLocalStore.setItem( 'udid_ver20120725', bytes );
-		//		return udid;
-		//	}
-		//}
+		public function getUDID():String{
+			var storedValue:ByteArray = EncryptedLocalStore.getItem('udid_ver20120725');
+			if( storedValue ){
+				return storedValue.readUTFBytes( storedValue.length );
+			} else {
+				// 作成して保存
+				var udid:String = UIDUtil.createUID();
+				var bytes:ByteArray = new ByteArray();
+				bytes.writeUTFBytes( udid );
+				EncryptedLocalStore.setItem( 'udid_ver20120725', bytes );
+				return udid;
+			}
+		}
 
 		
 		
