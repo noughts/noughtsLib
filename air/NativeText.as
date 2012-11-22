@@ -74,11 +74,11 @@ package jp.noughts.air{
 		public var hintColor:uint = 0x999999;
 		public var color:uint = 0;
 
-		private var _hintText:String = "";
+		private var hintText_txt:TextField = new TextField();
+
 		public function set hintText( val:String ):void{
-			_hintText = val;
+			hintText_txt.text = val
 		}
-		public function get hintText():String{ return _hintText }
 
 		private var _value:String = "";
 		public function get value():String{ return _value }
@@ -96,6 +96,15 @@ package jp.noughts.air{
 			this.st = new StageText(stio);
 
 			this.st.fontSize = 32;
+
+			var fmt:TextFormat = new TextFormat()
+			fmt.font = "Hiragino Kaku Gothic ProN"
+			fmt.size = 32;
+			hintText_txt.autoSize = "left"
+			hintText_txt.defaultTextFormat = fmt;
+			hintText_txt.textColor = hintColor;
+			hintText_txt.y = 10
+			this.addChild( hintText_txt )
 		}
 
 
@@ -136,7 +145,7 @@ package jp.noughts.air{
 			this.addEventListener( Event.ENTER_FRAME, _onEnterFrame );
 			this.addEventListener( FocusEvent.FOCUS_IN, _onFocusIn );
 			this.addEventListener( FocusEvent.FOCUS_OUT, _onFocusOut );
-			this.addEventListener( Event.CHANGE, _onChangeText );
+			this.st.addEventListener( Event.CHANGE, _onChangeText );
 			_onFocusOut();// hintTextを表示
 
 			if( autoFreeze ){
@@ -150,7 +159,7 @@ package jp.noughts.air{
 			this.st.stage = null;
 			this.removeEventListener( FocusEvent.FOCUS_IN, _onFocusIn );
 			this.removeEventListener( FocusEvent.FOCUS_OUT, _onFocusOut );
-			this.removeEventListener( Event.CHANGE, _onChangeText );
+			this.st.removeEventListener( Event.CHANGE, _onChangeText );
 			signals.focusOut.remove( _freezeOnFocusOut )
 		}
 
@@ -160,20 +169,17 @@ package jp.noughts.air{
 
 
 		private function _onFocusIn( e:FocusEvent ):void{
-			if( value=="" ){
-				this.text = "";
-				st.color = color;
-			}
 		}
 		private function _onFocusOut( e:FocusEvent=null ):void{
-			if( value=="" ){
-				this.text = hintText;
-				st.color = hintColor;
-			}
 		}
 
-		private function _onChangeText( e:Event ):void{
-			_value = this.text;
+		private function _onChangeText( e:Event=null ):void{
+			//_value = this.text;
+			if( st.text == "" ){
+				hintText_txt.visible = true;
+			} else {
+				hintText_txt.visible = false;
+			}
 		}
 
 		private function _onEnterFrame( e:Event ):void{
@@ -295,7 +301,11 @@ package jp.noughts.air{
 		
 		public function set text(text:String):void
 		{
+			if( this.st.stage ){
+				unfreeze()
+			}
 			this.st.text = text;
+			_onChangeText()
 		}
 
 		public function get text():String
