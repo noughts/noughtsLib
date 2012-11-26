@@ -150,7 +150,7 @@ package jp.noughts.progression.commands {
 
 
 		private function _loop(e:Event):void{
-			trace( e )
+			//trace( e )
 			if( _target_obj[_propName] === null ){
 			} else {
 				looper_mc.removeEventListener( Event.ENTER_FRAME, _loop );
