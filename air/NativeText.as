@@ -72,7 +72,9 @@ package jp.noughts.air{
 		private var _borderCornerSize:uint = 0;
 		private var lineMetric:TextLineMetrics;
 		public var hintColor:uint = 0x999999;
-		public var color:uint = 0;
+		public function set color( val:uint ):void{
+			st.color = val;
+		}
 
 		private var hintText_txt:TextField = new TextField();
 
