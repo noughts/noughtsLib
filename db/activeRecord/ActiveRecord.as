@@ -12,6 +12,8 @@
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 
+	import mx.utils.*;
+
 	import jp.noughts.db.DB;
 	import jp.noughts.db.sql_db;
 	import jp.noughts.db.utils.Inflector;
@@ -443,11 +445,12 @@
 			}
 
 			for (var i:int = 0; i < params.length; i++){
-				if( params[i] ){
+				if( params[i] !== null ){
 					stmt.parameters[i] = params[i];
 				}
 			}
-
+			//trace( "params", ObjectUtil.toString(params) )
+			//trace( "stmt", ObjectUtil.toString(stmt.parameters) )
 			stmt.execute();
 			var result:SQLResult = stmt.getResult();
 

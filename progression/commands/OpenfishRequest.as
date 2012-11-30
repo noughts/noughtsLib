@@ -64,13 +64,16 @@ package jp.noughts.progression.commands{
 				super.throwError( this, new IOError(data.text) );
 				return;
 			}
-			super.latestData = data;
-			_destroyTimer();// を破棄する
-			super.executeComplete();// 処理を終了する
 
 			if( _verbose ){
 				Logger.info( ObjectUtil.toString(data) )
 			}
+
+			
+			super.latestData = data;
+			_destroyTimer();// を破棄する
+			super.executeComplete();// 処理を終了する
+
 		}
 
 

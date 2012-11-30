@@ -12,7 +12,7 @@ package jp.noughts.utils
 	import flash.events.*;
 	import flash.net.*;
 
-	dynamic public class QueryParser extends Sprite{
+	dynamic public class QueryParser{
 
     	public function QueryParser( url:String ){
     		var questionPos:int = url.indexOf("?")
