@@ -10,6 +10,13 @@ package jp.noughts.media{
 
 	public class Finder extends Sprite{
 
+		static public const STAGE_VIDEO_MODE:String = "stageVideoMode"
+		static public const NORMAL_VIDEO_MODE:String = "normalVideoMode"
+		// stageVideoをそのまま表示させずに、一旦 bitmapData に draw して表示させるモード
+		// スマホなど映像が回転してしまう場合にはこちら
+		static public const STAGE_VIDEO_CAPTURE_MODE:String = "stageVideoCaptureMode"
+
+
 		private var _signals:InteractiveObjectSignalSet;
 		public function get signals():InteractiveObjectSignalSet{
 			return _signals ||= new InteractiveObjectSignalSet(this);
@@ -24,6 +31,7 @@ package jp.noughts.media{
 
 
 		private var _stageVideoMode:Boolean = false;
+		private var _mode:String
 		private var _width:uint;
 		private var _height:uint;
 		private var _video:Video;
@@ -34,12 +42,16 @@ package jp.noughts.media{
 		private var _cameraId:String = "0";
 		private var _flash_mc:Shape = new Shape();
 		private var _initialized:Boolean = false;
+		private var bmp:Bitmap;
 
 
-		public function Finder( $width:uint, $height:uint, stageVideoMode:Boolean=false, cameraId:String=null ){
+		public function Finder( $width:uint, $height:uint, mode:String=NORMAL_VIDEO_MODE, cameraId:String=null ){
 			_stageVideoMode = stageVideoMode;
+			_mode = mode;
 			_width = $width;
 			_height = $height;
+
+			_bd = new BitmapData( _width, _height );
 
 			var g:Graphics = _flash_mc.graphics;
 			g.beginFill( 0xffffff );
@@ -63,13 +75,28 @@ package jp.noughts.media{
 		private function _onAddedToStage( e ){
 			Logger.info( "Finder _onAddedToStage" )
 			// stageVideoチェック
-			if( _stageVideoMode ){
+			if( _mode==STAGE_VIDEO_MODE || _mode==STAGE_VIDEO_CAPTURE_MODE ){
 				if( stage.stageVideos.length == 0 ){
 					Logger.warn( "Finder StageVideo が利用できないので通常のvideoにフォールバックします。" )
-					_stageVideoMode = false;
+					_mode = NORMAL_VIDEO_MODE
 				}
 			}
 			_initCamera()
+		}
+
+
+		private function _initCamera():void{
+			switch( _mode ){
+				case STAGE_VIDEO_MODE:
+					_setStageVideo()
+					break;
+				case STAGE_VIDEO_CAPTURE_MODE:
+					_setStageVideoCapture()
+					break;
+				case NORMAL_VIDEO_MODE:
+					_setNormalVideo();
+					break;
+			}
 		}
 
 
@@ -78,21 +105,31 @@ package jp.noughts.media{
 			if( disableOnRemovedFromStage ){
 				_video.attachCamera( null );
 			}
-		}
-
-
-
-		private function _initCamera():void{
-			if( _stageVideoMode ){
-				_setStageVideo()
-			} else {
-				_setNormalVideo();
-			}
+			_stageVideo.attachCamera( null )
+			removeEventListener( Event.ENTER_FRAME, _captureLoop )
 
 		}
 
 
 
+
+
+		private function _setStageVideoCapture():void{
+			Logger.info( "stage.stageVideos", stage.stageVideos, stage.stageVideos.length )
+			_stageVideo = stage.stageVideos[0];
+			
+			_camera.setMode( _width, _height, 30 );
+			_stageVideo.attachCamera( _camera )
+
+			bmp = new Bitmap( _bd )
+			addChild( bmp )
+			addEventListener( Event.ENTER_FRAME, _captureLoop )
+		}
+
+
+		private function _captureLoop( e ){
+			_camera.drawToBitmapData( _bd )
+		}
 
 
 
@@ -107,7 +144,6 @@ package jp.noughts.media{
 
 
 		public function capture():void{
-			_bd = new BitmapData( _width, _height );
 			_bd.draw( this );
 			_preview_bmp = new Bitmap( _bd );
 		}
@@ -199,12 +235,12 @@ package jp.noughts.media{
 
 			var frameSize:Rectangle = new Rectangle( 0, 0, _width, _height );
 			
-			if( Capabilities.os.indexOf("iPhone")>-1 ){
+			if( Capabilities.os.indexOf("Mac")>-1 ){
+				_video.x = 0 - (_video.width-_width)/2
+			} else {
 				_video.rotation = 90;
 				_video.x = frameSize.width;
 				_video.y = frameSize.height/2 - _video.width/2;
-			} else {
-				_video.x = 0 - (_video.width-_width)/2
 			}
 			_video.attachCamera( _camera );
 			addChild( _video );
