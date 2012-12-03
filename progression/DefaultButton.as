@@ -117,7 +117,7 @@
 		override public function atCastMouseDown():void {
 			var list = new ParallelList();
 			list.addCommand(
-				new DoTweener( view, {"_brightness":-0.3, time:0} )
+				new DoTweener( view, {"_brightness":-0.5, time:0} )
 			);
 			list.execute();
 		}
