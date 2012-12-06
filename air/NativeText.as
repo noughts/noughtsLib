@@ -32,6 +32,9 @@
 //  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package jp.noughts.air{
+
+	import jp.nium.core.debug.Logger;
+
 	import flash.utils.*;
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
@@ -145,6 +148,7 @@ package jp.noughts.air{
 
 		private function onAddedToStage(e:Event):void{
 			hintText_txt.addEventListener( MouseEvent.CLICK, onHintTextClick );
+			addStageText();
 		}
 
 		private function onHintTextClick(e){
@@ -170,7 +174,8 @@ package jp.noughts.air{
 
 
 		private function addStageText(){
-			if( stageTextAdded==false ){
+			Logger.info( "NativeText addStageText", stageTextAdded, this.stage )
+			if( stageTextAdded==false && this.stage ){
 				this.st.stage = this.stage;
 				this.render();
 				this.addEventListener( Event.ENTER_FRAME, _onEnterFrame );
@@ -179,8 +184,9 @@ package jp.noughts.air{
 				if( autoFreeze ){
 					signals.focusOut.add( _freezeOnFocusOut )
 				}
+				stageTextAdded = true;
+
 			}
-			stageTextAdded = true;
 		}
 
 
