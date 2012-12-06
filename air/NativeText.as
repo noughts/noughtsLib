@@ -78,6 +78,7 @@ package jp.noughts.air{
 		}
 
 		private var hintText_txt:TextField = new TextField();
+		private var stageTextAdded:Boolean = false;
 
 		public function set hintText( val:String ):void{
 			hintText_txt.text = val
@@ -143,7 +144,13 @@ package jp.noughts.air{
 
 
 		private function onAddedToStage(e:Event):void{
-			hintText_txt.addEventListener( MouseEvent.CLICK, addStageText );
+			hintText_txt.addEventListener( MouseEvent.CLICK, onHintTextClick );
+		}
+
+		private function onHintTextClick(e){
+			addStageText();
+			setTimeout( this.st.assignFocus, 30 )
+
 		}
 		
 		private function onRemoveFromStage(e:Event):void{
@@ -153,6 +160,8 @@ package jp.noughts.air{
 			this.st.stage = null;
 			this.st.removeEventListener( Event.CHANGE, _onChangeText );
 			signals.focusOut.remove( _freezeOnFocusOut )
+			stageTextAdded = false;
+
 		}
 
 		private function _freezeOnFocusOut( e:FocusEvent ):void{
@@ -160,16 +169,18 @@ package jp.noughts.air{
 		}
 
 
-		private function addStageText(e){
-			this.st.stage = this.stage;
-			this.render();
-			this.addEventListener( Event.ENTER_FRAME, _onEnterFrame );
-			this.st.addEventListener( Event.CHANGE, _onChangeText );
+		private function addStageText(){
+			if( stageTextAdded==false ){
+				this.st.stage = this.stage;
+				this.render();
+				this.addEventListener( Event.ENTER_FRAME, _onEnterFrame );
+				this.st.addEventListener( Event.CHANGE, _onChangeText );
 
-			if( autoFreeze ){
-				signals.focusOut.add( _freezeOnFocusOut )
+				if( autoFreeze ){
+					signals.focusOut.add( _freezeOnFocusOut )
+				}
 			}
-			setTimeout( this.st.assignFocus, 100 )
+			stageTextAdded = true;
 		}
 
 
@@ -305,6 +316,9 @@ package jp.noughts.air{
 				unfreeze()
 			}
 			this.st.text = text;
+			if( text != "" ){
+				addStageText()
+			}
 			_onChangeText()
 		}
 
