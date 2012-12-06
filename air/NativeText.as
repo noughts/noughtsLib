@@ -90,7 +90,11 @@ package jp.noughts.air{
 		private var _value:String = "";
 		public function get value():String{ return _value }
 
-
+		private var _bd:BitmapData
+		private var _textWidth:uint;
+		private var _textHeight:uint
+		public function get textWidth():uint{ return _textWidth }
+		public function get textHeight():uint{ return _textHeight }
 
 		public function NativeText(numberOfLines:uint = 1){
 			super();
@@ -112,6 +116,85 @@ package jp.noughts.air{
 			hintText_txt.textColor = hintColor;
 			hintText_txt.y = 10
 			this.addChild( hintText_txt )
+		}
+
+
+
+		private function onAddedToStage(e:Event):void{
+			hintText_txt.addEventListener( MouseEvent.CLICK, onHintTextClick );
+			addStageText();
+		}
+
+		
+		private function onRemoveFromStage(e:Event):void{
+			hintText_txt.removeEventListener( MouseEvent.CLICK, addStageText );
+			this.removeEventListener( Event.ENTER_FRAME, _onEnterFrame );
+			//this.st.dispose();
+			this.st.stage = null;
+			this.st.removeEventListener( Event.CHANGE, _onChangeText );
+			signals.focusOut.remove( _freezeOnFocusOut )
+			stageTextAdded = false;
+
+		}
+
+
+		private function addStageText(){
+			Logger.info( "NativeText addStageText", stageTextAdded, this.stage )
+			if( stageTextAdded==false && this.stage ){
+				this.st.stage = this.stage;
+				this.render();
+				this.addEventListener( Event.ENTER_FRAME, _onEnterFrame );
+				this.st.addEventListener( Event.CHANGE, _onChangeText );
+
+				if( autoFreeze ){
+					signals.focusOut.add( _freezeOnFocusOut )
+				}
+				stageTextAdded = true;
+
+			}
+		}
+
+
+
+		private function _onChangeText( e:Event=null ):void{
+			//_value = this.text;
+			if( st.text == "" ){
+				hintText_txt.visible = true;
+			} else {
+				hintText_txt.visible = false;
+			}
+
+			// textWidth,textHeight を測定
+			_bd = new BitmapData( st.viewPort.width, st.viewPort.height, true, 0 )
+			st.drawViewPortToBitmapData( _bd )
+			_bd = trimWhiteSpace( _bd )
+			_textWidth = _bd.width
+			_textHeight = _bd.height;
+		}
+
+
+
+
+
+		// BitmapData の周りの透明部分をトリムする
+		private function trimWhiteSpace( source_bd:BitmapData ):BitmapData{
+			var content_rect:Rectangle = source_bd.getColorBoundsRect( 0xFF000000, 0x00000000, false )
+			trace(content_rect)
+
+			var content_bd:BitmapData = new BitmapData( content_rect.width, content_rect.height, true, 0 )
+			content_bd.copyPixels( source_bd, content_rect, new Point() )
+			return content_bd;
+		}
+
+
+
+
+
+
+		private function onHintTextClick(e){
+			addStageText();
+			setTimeout( this.st.assignFocus, 30 )
+
 		}
 
 
@@ -146,58 +229,14 @@ package jp.noughts.air{
 		
 
 
-		private function onAddedToStage(e:Event):void{
-			hintText_txt.addEventListener( MouseEvent.CLICK, onHintTextClick );
-			addStageText();
-		}
-
-		private function onHintTextClick(e){
-			addStageText();
-			setTimeout( this.st.assignFocus, 30 )
-
-		}
-		
-		private function onRemoveFromStage(e:Event):void{
-			hintText_txt.removeEventListener( MouseEvent.CLICK, addStageText );
-			this.removeEventListener( Event.ENTER_FRAME, _onEnterFrame );
-			//this.st.dispose();
-			this.st.stage = null;
-			this.st.removeEventListener( Event.CHANGE, _onChangeText );
-			signals.focusOut.remove( _freezeOnFocusOut )
-			stageTextAdded = false;
-
-		}
-
 		private function _freezeOnFocusOut( e:FocusEvent ):void{
 			freeze();
 		}
 
 
-		private function addStageText(){
-			Logger.info( "NativeText addStageText", stageTextAdded, this.stage )
-			if( stageTextAdded==false && this.stage ){
-				this.st.stage = this.stage;
-				this.render();
-				this.addEventListener( Event.ENTER_FRAME, _onEnterFrame );
-				this.st.addEventListener( Event.CHANGE, _onChangeText );
-
-				if( autoFreeze ){
-					signals.focusOut.add( _freezeOnFocusOut )
-				}
-				stageTextAdded = true;
-
-			}
-		}
 
 
-		private function _onChangeText( e:Event=null ):void{
-			//_value = this.text;
-			if( st.text == "" ){
-				hintText_txt.visible = true;
-			} else {
-				hintText_txt.visible = false;
-			}
-		}
+
 
 		private function _onEnterFrame( e:Event ):void{
 			this.st.viewPort = this.getViewPortRectangle();
