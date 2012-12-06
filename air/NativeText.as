@@ -122,7 +122,7 @@ package jp.noughts.air{
 
 		private function onAddedToStage(e:Event):void{
 			hintText_txt.addEventListener( MouseEvent.CLICK, onHintTextClick );
-			addStageText();
+			//addStageText();
 		}
 
 		
@@ -165,11 +165,15 @@ package jp.noughts.air{
 			}
 
 			// textWidth,textHeight を測定
-			_bd = new BitmapData( st.viewPort.width, st.viewPort.height, true, 0 )
-			st.drawViewPortToBitmapData( _bd )
-			_bd = trimWhiteSpace( _bd )
-			_textWidth = _bd.width
-			_textHeight = _bd.height;
+			if( st.viewPort.width>0 && st.viewPort.height>0 ){
+				_bd = new BitmapData( st.viewPort.width, st.viewPort.height, true, 0 )
+				st.drawViewPortToBitmapData( _bd )
+				_bd = trimWhiteSpace( _bd )
+				if( _bd ){
+					_textWidth = _bd.width
+					_textHeight = _bd.height;
+				}
+			}
 		}
 
 
@@ -180,10 +184,13 @@ package jp.noughts.air{
 		private function trimWhiteSpace( source_bd:BitmapData ):BitmapData{
 			var content_rect:Rectangle = source_bd.getColorBoundsRect( 0xFF000000, 0x00000000, false )
 			trace(content_rect)
-
-			var content_bd:BitmapData = new BitmapData( content_rect.width, content_rect.height, true, 0 )
-			content_bd.copyPixels( source_bd, content_rect, new Point() )
-			return content_bd;
+			if( content_rect.width>0 && content_rect.height>0 ){
+				var content_bd:BitmapData = new BitmapData( content_rect.width, content_rect.height, true, 0 )
+				content_bd.copyPixels( source_bd, content_rect, new Point() )
+				return content_bd;
+			} else {
+				return null
+			}
 		}
 
 
