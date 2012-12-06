@@ -32,6 +32,7 @@
 //  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package jp.noughts.air{
+	import flash.utils.*;
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.Sprite;
@@ -142,25 +143,14 @@ package jp.noughts.air{
 
 
 		private function onAddedToStage(e:Event):void{
-			this.st.stage = this.stage;
-			this.render();
-			this.addEventListener( Event.ENTER_FRAME, _onEnterFrame );
-			this.addEventListener( FocusEvent.FOCUS_IN, _onFocusIn );
-			this.addEventListener( FocusEvent.FOCUS_OUT, _onFocusOut );
-			this.st.addEventListener( Event.CHANGE, _onChangeText );
-			_onFocusOut();// hintTextを表示
-
-			if( autoFreeze ){
-				signals.focusOut.add( _freezeOnFocusOut )
-			}
+			hintText_txt.addEventListener( MouseEvent.CLICK, addStageText );
 		}
 		
 		private function onRemoveFromStage(e:Event):void{
+			hintText_txt.removeEventListener( MouseEvent.CLICK, addStageText );
 			this.removeEventListener( Event.ENTER_FRAME, _onEnterFrame );
 			//this.st.dispose();
 			this.st.stage = null;
-			this.removeEventListener( FocusEvent.FOCUS_IN, _onFocusIn );
-			this.removeEventListener( FocusEvent.FOCUS_OUT, _onFocusOut );
 			this.st.removeEventListener( Event.CHANGE, _onChangeText );
 			signals.focusOut.remove( _freezeOnFocusOut )
 		}
@@ -170,10 +160,18 @@ package jp.noughts.air{
 		}
 
 
-		private function _onFocusIn( e:FocusEvent ):void{
+		private function addStageText(e){
+			this.st.stage = this.stage;
+			this.render();
+			this.addEventListener( Event.ENTER_FRAME, _onEnterFrame );
+			this.st.addEventListener( Event.CHANGE, _onChangeText );
+
+			if( autoFreeze ){
+				signals.focusOut.add( _freezeOnFocusOut )
+			}
+			setTimeout( this.st.assignFocus, 100 )
 		}
-		private function _onFocusOut( e:FocusEvent=null ):void{
-		}
+
 
 		private function _onChangeText( e:Event=null ):void{
 			//_value = this.text;
