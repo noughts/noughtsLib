@@ -440,12 +440,14 @@
 			stmt.sqlConnection = connection;
 			stmt.text = sql;
 
+			var paramsFound:Boolean = false
 			if (params.length == 1 && params[0] is Array){
 				params = params[0];
+				paramsFound = true;
 			}
 
-			for (var i:int = 0; i < params.length; i++){
-				if( params[i] !== null ){
+			if( paramsFound ){
+				for (var i:int = 0; i < params.length; i++){
 					stmt.parameters[i] = params[i];
 				}
 			}
