@@ -81,7 +81,7 @@ package jp.noughts.progression.commands{
 					var result = this.latestData;
 					//Logger.info( ObjectUtil.toString(result) );
 					var username:ByteArray = new ByteArray();
-					username.writeUTFBytes( result.response.users[0].name );
+					username.writeUTFBytes( result.response.users[0].username );
 					var password:ByteArray = new ByteArray();
 					password.writeUTFBytes( result.response.users[0].password );
 					EncryptedLocalStore.setItem( 'openfishAutoLoginUsername', username );
