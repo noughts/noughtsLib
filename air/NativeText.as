@@ -114,7 +114,7 @@ package jp.noughts.air{
 			hintText_txt.autoSize = "left"
 			hintText_txt.defaultTextFormat = fmt;
 			hintText_txt.textColor = hintColor;
-			hintText_txt.y = 10
+			hintText_txt.y = 2
 			this.addChild( hintText_txt )
 		}
 
@@ -122,7 +122,7 @@ package jp.noughts.air{
 
 		private function onAddedToStage(e:Event):void{
 			hintText_txt.addEventListener( MouseEvent.CLICK, onHintTextClick );
-			//addStageText();
+			addStageText();
 		}
 
 		
@@ -368,9 +368,9 @@ package jp.noughts.air{
 				unfreeze()
 			}
 			this.st.text = text;
-			if( text != "" ){
-				addStageText()
-			}
+			//if( text != "" ){
+			//	addStageText()
+			//}
 			_onChangeText()
 		}
 
