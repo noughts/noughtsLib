@@ -167,11 +167,15 @@ package jp.noughts.air{
 			// textWidth,textHeight を測定
 			if( st.viewPort.width>0 && st.viewPort.height>0 ){
 				_bd = new BitmapData( st.viewPort.width, st.viewPort.height, true, 0 )
-				st.drawViewPortToBitmapData( _bd )
-				_bd = trimWhiteSpace( _bd )
-				if( _bd ){
-					_textWidth = _bd.width
-					_textHeight = _bd.height;
+				// st.viewPortがたまにroundできていなくてdrawViewPortToBitmapDataでエラー出るので
+				// きちんと一緒かどうか判定する
+				if( _bd.rect.equals(st.viewPort) ){
+					st.drawViewPortToBitmapData( _bd )
+					_bd = trimWhiteSpace( _bd )
+					if( _bd ){
+						_textWidth = _bd.width
+						_textHeight = _bd.height;
+					}
 				}
 			}
 		}
@@ -247,6 +251,7 @@ package jp.noughts.air{
 
 		private function _onEnterFrame( e:Event ):void{
 			this.st.viewPort = this.getViewPortRectangle();
+			trace( st.viewPort )
 		}
 		
 		public function set borderThickness(borderThickness:uint):void
