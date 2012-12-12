@@ -50,6 +50,9 @@ package jp.noughts.display{
 		public function set color( val:uint ):void{
 			multilineStageText.color = val;
 		}
+		public function set fontWeight( val:String ):void{
+			multilineStageText.fontWeight = val;
+		}
 
 
 		public function set text( val:String ):void{
