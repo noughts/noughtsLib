@@ -187,7 +187,7 @@ package jp.noughts.air{
 		// BitmapData の周りの透明部分をトリムする
 		private function trimWhiteSpace( source_bd:BitmapData ):BitmapData{
 			var content_rect:Rectangle = source_bd.getColorBoundsRect( 0xFF000000, 0x00000000, false )
-			trace(content_rect)
+			//trace(content_rect)
 			if( content_rect.width>0 && content_rect.height>0 ){
 				var content_bd:BitmapData = new BitmapData( content_rect.width, content_rect.height, true, 0 )
 				content_bd.copyPixels( source_bd, content_rect, new Point() )
@@ -251,7 +251,6 @@ package jp.noughts.air{
 
 		private function _onEnterFrame( e:Event ):void{
 			this.st.viewPort = this.getViewPortRectangle();
-			trace( st.viewPort )
 		}
 		
 		public function set borderThickness(borderThickness:uint):void
