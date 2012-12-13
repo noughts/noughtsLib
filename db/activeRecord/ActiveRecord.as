@@ -11,6 +11,7 @@
 	import flash.utils.flash_proxy;
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
+	import jp.nium.core.debug.Logger;
 
 	import mx.utils.*;
 
@@ -18,6 +19,7 @@
 	import jp.noughts.db.sql_db;
 	import jp.noughts.db.utils.Inflector;
 	import jp.noughts.db.utils.Reflection;
+	import org.osflash.signals.*;import org.osflash.signals.natives.*;import org.osflash.signals.natives.sets.*;import org.osflash.signals.natives.base.*;
 
 	use namespace sql_db;
 	use namespace flash_proxy;
@@ -461,27 +463,37 @@
 			return sql.toUpperCase().indexOf("SELECT ") == 0 ? result.data || [] : result.rowsAffected;
 		}
 
-		public function asyncQuery(sql:String, resultFunction:Function, ...params:Array):void
-		{
+		private var sqlConnectionOpened_sig:NativeSignal
+		public function asyncQuery( clazz:Class, sql:String, resultFunction:Function, ...params:Array ):void{
 			var stmt:SQLStatement = new SQLStatement();
-			stmt.sqlConnection = DB.getConnection(defaultConnectionAlias);
 			stmt.text = sql;
+			stmt.itemClass = clazz;
 
-			if (params.length == 1 && params[0] is Array)
-				params = params[0];
+			stmt.sqlConnection = DB.getConnection(defaultConnectionAlias);
+			sqlConnectionOpened_sig = new NativeSignal( stmt.sqlConnection, SQLEvent.OPEN, SQLEvent )
+			sqlConnectionOpened_sig.addOnce( function(e:SQLEvent):void{
+				Logger.info( "ActiveRecord asyncQuery connection opened" )
+				if (params.length == 1 && params[0] is Array)
+					params = params[0];
 
-			for (var i:int = 0; i < params.length; i++)
-				stmt.parameters[i] = params[i];
+				for (var i:int = 0; i < params.length; i++)
+					stmt.parameters[i] = params[i];
 
-			var listener:Function = function(event:SQLEvent):void
-			{
-				var result:SQLResult = stmt.getResult();
-				resultFunction(sql.toUpperCase().indexOf("SELECT ") == 0 ? result.data || [] : result.rowsAffected);
-				stmt.removeEventListener(SQLEvent.RESULT, listener);
-			};
-			stmt.addEventListener(SQLEvent.RESULT, listener);
-			stmt.execute();
+				var listener:Function = function(event:SQLEvent):void
+				{
+					var result:SQLResult = stmt.getResult();
+					resultFunction(sql.toUpperCase().indexOf("SELECT ") == 0 ? result.data || [] : result.rowsAffected);
+					stmt.removeEventListener(SQLEvent.RESULT, listener);
+				};
+				stmt.addEventListener(SQLEvent.RESULT, listener);
+				stmt.execute();
+			} )
+			// 2回目以降は接続済みになるので、openedをdispatchする
+			if( stmt.sqlConnection.connected ){
+				sqlConnectionOpened_sig.dispatch( new SQLEvent(SQLEvent.OPEN) )
+			}
 		}
+
 
 		sql_db function loadItems(clazz:Class, sql:String, ...params:Array):Array{
 			var stmt:SQLStatement = new SQLStatement();
