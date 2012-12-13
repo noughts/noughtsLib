@@ -45,26 +45,22 @@
 						@type == "uint" ||
 						@type == "int" ||
 						@type == "Date" ||
-						@type == "flash.utils.ByteArray"
+						@type == "flash.utils::ByteArray"
 					)
 				);
-
+			//trace( publicVars )
 			var field:XML;
 			var fieldDef:Array
 
-			if (!schema)
-			{
+			if (!schema){
 				try {
 					var dbschema:SQLSchemaResult = DB.getSchema(obj.connection);
 				} catch (e:Error) {}
 
 				// first, find the table this object represents
-				if (dbschema)
-				{
-					for each (var tmpTable:SQLTableSchema in dbschema.tables)
-					{
-						if (tmpTable.name == tableName)
-						{
+				if (dbschema){
+					for each (var tmpTable:SQLTableSchema in dbschema.tables){
+						if (tmpTable.name == tableName){
 							schema = tmpTable;
 							break;
 						}
@@ -73,12 +69,10 @@
 			}
 
 			// if no table was found, create it, otherwise, update any missing fields
-			if (!schema)
-			{
+			if (!schema){
 				var fields:Array = [];
 
-				for each (field in publicVars)
-				{
+				for each (field in publicVars){
 					fieldDef = [field.@name, dbTypes[field.@type]];
 
 					if (field.@name == primaryKey)
@@ -91,17 +85,12 @@
 				sql = "CREATE TABLE " + tableName + " (" + fields.join(", ") + ")";
 				stmt.text = sql;
 				stmt.execute();
-			}
-			else
-			// check if any fields differ or have been added
-			{
-				for each (field in publicVars)
-				{
+			} else {
+				// check if any fields differ or have been added
+				for each (field in publicVars){
 					var found:Boolean = false;
-					for each (var column:SQLColumnSchema in schema.columns)
-					{
-						if (column.name == field.@name)
-						{
+					for each (var column:SQLColumnSchema in schema.columns){
+						if (column.name == field.@name){
 							found = true;
 							break;
 						}
@@ -131,7 +120,7 @@
 			"uint": "INTEGER",
 			"int": "INTEGER",
 			"Date": "DATETIME",
-			"flash.utils.ByteArray": "BLOB"
+			"flash.utils::ByteArray": "BLOB"
 		};
 	}
 }
