@@ -441,8 +441,10 @@
 			stmt.text = sql;
 
 			var paramsFound:Boolean = false
-			if (params.length == 1 && params[0] is Array){
-				params = params[0];
+			if( params.length == 1 && params[0]!=null ){
+				if( params[0] is Array ){	
+					params = params[0];
+				}
 				paramsFound = true;
 			}
 
