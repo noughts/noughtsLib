@@ -1,6 +1,6 @@
 /*
 
-ローカルキャッシュ付き LoadBitmapData	
+ローカルキャッシュ付き LoadBitmap	
 
 */
 package jp.noughts.progression.commands {
@@ -17,18 +17,18 @@ package jp.noughts.progression.commands {
 	import jp.noughts.air.*
 	
 	/**
-	 * <span lang="ja">LoadBitmapData クラスは、指定された画像ファイルの読み込み操作を行うコマンドクラスです。</span>
+	 * <span lang="ja">LoadBitmap クラスは、指定された画像ファイルの読み込み操作を行うコマンドクラスです。</span>
 	 * <span lang="en"></span>
 	 * 
 	 * @example <listing version="3.0">
-	 * // LoadBitmapData インスタンスを作成する
-	 * var com:LoadBitmapData = new LoadBitmapData();
+	 * // LoadBitmap インスタンスを作成する
+	 * var com:LoadBitmap = new LoadBitmap();
 	 * 
 	 * // コマンドを実行する
 	 * com.execute();
 	 * </listing>
 	 */
-	public class LoadBitmapData extends LoadCommand {
+	public class LoadBitmap extends LoadCommand {
 		
 		/**
 		 * <span lang="ja">ポリシーファイルの存在の確認や、ApplicationDomain 及び SecurityDomain の設定を行う LoaderContext を取得または設定します。
@@ -50,8 +50,8 @@ package jp.noughts.progression.commands {
 		
 		
 		/**
-		 * <span lang="ja">新しい LoadBitmapData インスタンスを作成します。</span>
-		 * <span lang="en">Creates a new LoadBitmapData object.</span>
+		 * <span lang="ja">新しい LoadBitmap インスタンスを作成します。</span>
+		 * <span lang="en">Creates a new LoadBitmap object.</span>
 		 * 
 		 * @param request
 		 * <span lang="ja">読み込みたい JPEG、GIF、または PNG ファイルの絶対 URL または相対 URL です。</span>
@@ -60,7 +60,7 @@ package jp.noughts.progression.commands {
 		 * <span lang="ja">設定したいプロパティを含んだオブジェクトです。</span>
 		 * <span lang="en"></span>
 		 */
-		public function LoadBitmapData( request:URLRequest, initObject:Object = null ) {
+		public function LoadBitmap( request:URLRequest, initObject:Object = null ) {
 			// クラスをコンパイルに含める
 			progression_internal;
 			
@@ -68,8 +68,8 @@ package jp.noughts.progression.commands {
 			super( request, initObject );
 			cacheAsResource = true
 			preventCache = false;
-			// initObject が LoadBitmapData であれば
-			var com:LoadBitmapData = initObject as LoadBitmapData;
+			// initObject が LoadBitmap であれば
+			var com:LoadBitmap = initObject as LoadBitmap;
 			if ( com ) {
 				// 特定のプロパティを継承する
 				_context = com._context;
@@ -181,15 +181,15 @@ package jp.noughts.progression.commands {
 		}
 		
 		/**
-		 * <span lang="ja">LoadBitmapData インスタンスのコピーを作成して、各プロパティの値を元のプロパティの値と一致するように設定します。</span>
-		 * <span lang="en">Duplicates an instance of an LoadBitmapData subclass.</span>
+		 * <span lang="ja">LoadBitmap インスタンスのコピーを作成して、各プロパティの値を元のプロパティの値と一致するように設定します。</span>
+		 * <span lang="en">Duplicates an instance of an LoadBitmap subclass.</span>
 		 * 
 		 * @return
-		 * <span lang="ja">元のオブジェクトと同じプロパティ値を含む新しい LoadBitmapData インスタンスです。</span>
-		 * <span lang="en">A new LoadBitmapData object that is identical to the original.</span>
+		 * <span lang="ja">元のオブジェクトと同じプロパティ値を含む新しい LoadBitmap インスタンスです。</span>
+		 * <span lang="en">A new LoadBitmap object that is identical to the original.</span>
 		 */
 		override public function clone():Command {
-			return new LoadBitmapData( super.request, this );
+			return new LoadBitmap( super.request, this );
 		}
 		
 		
