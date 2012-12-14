@@ -111,6 +111,9 @@ package jp.noughts.progression.commands{
 					} ));
 				},
 				function(){
+					if( this.latestData==null ){
+						return
+					}
 					slist.latestData = this.latestData;
 					if( this.latestData.meta.status=="fail" ){
 						slist.insertCommand( autoCreateUser() )

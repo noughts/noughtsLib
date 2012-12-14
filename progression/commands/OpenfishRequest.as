@@ -62,7 +62,10 @@ package jp.noughts.progression.commands{
 		private function _requestComplete( data:Object ):void {
 			if( data is IOErrorEvent ){
 				//super.throwError( this, new IOError(data.text) );
-				Logger.info( "OpenfishRequest 通信エラー" )
+				Logger.info( "OpenfishRequest 通信エラー", _route )
+				super.latestData = null;
+				_destroyTimer();// を破棄する
+				super.executeComplete();// 処理を終了する
 				return;
 			}
 

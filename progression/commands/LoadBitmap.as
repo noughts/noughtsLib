@@ -101,7 +101,7 @@ package jp.noughts.progression.commands {
 			
 			// メモリキャッシュが存在すれば
 			if ( cache is Resource ) {
-				trace( "メモリキャッシュがありました!!!!!" )
+				Logger.info( "LoadBitmap メモリキャッシュがありました" )
 				// データを保持する
 				super.data = cache.data;
 				
@@ -115,7 +115,7 @@ package jp.noughts.progression.commands {
 				// ディスクキャッシュがあるか？
 				var diskRes:DiskCacheResource = DiskCacheResource.getById( super.request.url )
 				if( diskRes ){
-					trace( "ディスクキャッシュがありました!!!!!" )
+					Logger.info( "LoadBitmap ディスクキャッシュがありました" )
 
 					_loader = new Loader();
 					_loader.contentLoaderInfo.addEventListener( Event.COMPLETE, _complete );
@@ -125,15 +125,16 @@ package jp.noughts.progression.commands {
 					_context.checkPolicyFile = false
 					_loader.loadBytes( diskRes.data, _context )
 				} else {
+					Logger.info( "LoadBitmap キャッシュがないので新規読み込みを開始します" )
 					// ファイルを読み込む
 					_urlLoader = new URLLoader();
 					_urlLoader.dataFormat = URLLoaderDataFormat.BINARY
 					_urlLoader.addEventListener(Event.COMPLETE, _urlLoaderComplete);
-					//_urlLoader.addEventListener(Event.OPEN, trace);
-					//_urlLoader.addEventListener(ProgressEvent.PROGRESS, trace);
-					_urlLoader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, trace);
-					//_urlLoader.addEventListener(HTTPStatusEvent.HTTP_STATUS, trace);
-					_urlLoader.addEventListener(IOErrorEvent.IO_ERROR, trace);
+					//_urlLoader.addEventListener(Event.OPEN, Logger.info);
+					//_urlLoader.addEventListener(ProgressEvent.PROGRESS, Logger.info);
+					_urlLoader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, Logger.info);
+					//_urlLoader.addEventListener(HTTPStatusEvent.HTTP_STATUS, Logger.info);
+					_urlLoader.addEventListener(IOErrorEvent.IO_ERROR, Logger.info);
 					_urlLoader.load( toProperRequest( super.request ) );
 				}
 			}
@@ -198,7 +199,7 @@ package jp.noughts.progression.commands {
 		 * URLLoader のデータが正常にロードされたときに送出されます。
 		 */
 		private function _urlLoaderComplete( e:Event ):void {
-			trace( "URLLoader complete", _urlLoader.data.length )
+			Logger.info( "URLLoader complete", _urlLoader.data.length )
 			new DiskCacheResource( super.request.url, _urlLoader.data )
 
 			_loader = new Loader();
