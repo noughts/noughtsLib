@@ -16,7 +16,7 @@ package jp.noughts.air{
 		public function get data():ByteArray{ return _data }
 
 		public function DiskCacheResource( id:String, $data:ByteArray=null ){
-			if( data ){
+			if( $data ){
 				_data = $data;
 				var file:File = getFile( id )
 				var stream:FileStream = new FileStream();

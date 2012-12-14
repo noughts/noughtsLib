@@ -6,15 +6,10 @@
 package jp.noughts.progression.commands {
 	import jp.progression.config.*;import jp.progression.debug.*;import jp.progression.casts.*;import jp.progression.commands.display.*;import jp.progression.commands.lists.*;import jp.progression.commands.managers.*;import jp.progression.commands.media.*;import jp.progression.commands.net.*;import jp.progression.commands.tweens.*;import jp.progression.commands.*;import jp.progression.data.*;import jp.progression.events.*;import jp.progression.loader.*;import jp.progression.*;import jp.progression.scenes.*;import jp.nium.core.debug.Logger;import caurina.transitions.*;import caurina.transitions.properties.*;
 
-	import flash.display.Bitmap;
-	import flash.display.BitmapData;
-	import flash.display.Loader;
+	import flash.display.*;
 	import flash.errors.IOError;
-	import flash.events.Event;
-	import flash.events.IOErrorEvent;
-	import flash.events.ProgressEvent;
-	import flash.events.SecurityErrorEvent;
-	import flash.net.URLRequest;
+	import flash.events.*;
+	import flash.net.*;
 	import flash.system.LoaderContext;
 	import jp.progression.commands.Command;
 	import jp.progression.core.ns.progression_internal;
@@ -48,6 +43,7 @@ package jp.noughts.progression.commands {
 		 * Loader を取得します。
 		 */
 		private var _loader:Loader;
+		private var _urlLoader:URLLoader
 		
 		
 		
@@ -70,7 +66,8 @@ package jp.noughts.progression.commands {
 			
 			// 親クラスを初期化する
 			super( request, initObject );
-			
+			cacheAsResource = true
+			preventCache = false;
 			// initObject が LoadBitmapData であれば
 			var com:LoadBitmapData = initObject as LoadBitmapData;
 			if ( com ) {
@@ -104,6 +101,7 @@ package jp.noughts.progression.commands {
 			
 			// メモリキャッシュが存在すれば
 			if ( cache is Resource ) {
+				trace( "メモリキャッシュがありました!!!!!" )
 				// データを保持する
 				super.data = cache.data;
 				
@@ -113,19 +111,30 @@ package jp.noughts.progression.commands {
 				// 処理を終了する
 				super.executeComplete();
 			} else {
-				_loader = new Loader();
-				_loader.contentLoaderInfo.addEventListener( Event.COMPLETE, _complete );
-				_loader.contentLoaderInfo.addEventListener( IOErrorEvent.IO_ERROR, _ioError );
-				_loader.contentLoaderInfo.addEventListener( SecurityErrorEvent.SECURITY_ERROR, _securityError );
-				_loader.contentLoaderInfo.addEventListener( ProgressEvent.PROGRESS, super.dispatchEvent );
 
 				// ディスクキャッシュがあるか？
 				var diskRes:DiskCacheResource = DiskCacheResource.getById( super.request.url )
 				if( diskRes ){
+					trace( "ディスクキャッシュがありました!!!!!" )
+
+					_loader = new Loader();
+					_loader.contentLoaderInfo.addEventListener( Event.COMPLETE, _complete );
+					_loader.contentLoaderInfo.addEventListener( IOErrorEvent.IO_ERROR, _ioError );
+					_loader.contentLoaderInfo.addEventListener( SecurityErrorEvent.SECURITY_ERROR, _securityError );
+					_loader.contentLoaderInfo.addEventListener( ProgressEvent.PROGRESS, super.dispatchEvent );
+					_context.checkPolicyFile = false
 					_loader.loadBytes( diskRes.data, _context )
 				} else {
 					// ファイルを読み込む
-					_loader.load( toProperRequest( super.request ), _context );
+					_urlLoader = new URLLoader();
+					_urlLoader.dataFormat = URLLoaderDataFormat.BINARY
+					_urlLoader.addEventListener(Event.COMPLETE, _urlLoaderComplete);
+					//_urlLoader.addEventListener(Event.OPEN, trace);
+					//_urlLoader.addEventListener(ProgressEvent.PROGRESS, trace);
+					_urlLoader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, trace);
+					//_urlLoader.addEventListener(HTTPStatusEvent.HTTP_STATUS, trace);
+					_urlLoader.addEventListener(IOErrorEvent.IO_ERROR, trace);
+					_urlLoader.load( toProperRequest( super.request ) );
 				}
 			}
 		}
@@ -185,10 +194,27 @@ package jp.noughts.progression.commands {
 		
 		
 		
-		
+		/**
+		 * URLLoader のデータが正常にロードされたときに送出されます。
+		 */
+		private function _urlLoaderComplete( e:Event ):void {
+			trace( "URLLoader complete", _urlLoader.data.length )
+			new DiskCacheResource( super.request.url, _urlLoader.data )
+
+			_loader = new Loader();
+			_loader.contentLoaderInfo.addEventListener( Event.COMPLETE, _complete );
+			_loader.contentLoaderInfo.addEventListener( IOErrorEvent.IO_ERROR, _ioError );
+			_loader.contentLoaderInfo.addEventListener( SecurityErrorEvent.SECURITY_ERROR, _securityError );
+			_loader.contentLoaderInfo.addEventListener( ProgressEvent.PROGRESS, super.dispatchEvent );
+			_context.checkPolicyFile = false
+			_loader.loadBytes( _urlLoader.data, _context )
+		}
+
+
+
 		
 		/**
-		 * データが正常にロードされたときに送出されます。
+		 * ディスクキャッシュデータが正常にロードされたときに送出されます。
 		 */
 		private function _complete( e:Event ):void {
 			// 対象が Bitmap であれば
