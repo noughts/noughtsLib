@@ -208,11 +208,13 @@ package jp.noughts.cocoafish.sdk {
 				
 				//Request complete
 				loader.addEventListener(Event.COMPLETE, function():void{
+					//trace("cocoafish complete!!!")
 					completeCallback(loader.data, callbackFunc);
 				});
 				
 				//IO Error
 				loader.addEventListener(IOErrorEvent.IO_ERROR, function(event:Event):void {
+					//trace("cocoafish io_error!!!")
 					errorCallback(event, callbackFunc);
 				});
 				
@@ -267,8 +269,8 @@ package jp.noughts.cocoafish.sdk {
 				try{
 					var json:Object = JSON.parse( data );
 				} catch( e:Error ){
-					trace( data );
-					trace( e );
+					//trace( data );
+					//trace( e );
 					return;
 				}
 				var sessionId:String = parseSessionId(json);

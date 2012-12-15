@@ -22,7 +22,7 @@ package jp.noughts.progression.commands{
 		private var _verbose:Boolean = false;
 
 				
-		public function OpenfishRequest( route:String, method:String, param:Object=null, verbose:Object=null ) {
+		public function OpenfishRequest( route:String, method:String, param:Object=null, verbose:Object=null, initObject:Object=null ) {
 			if( !cocoafish ){
 				cocoafish = new Cocoafish( "dd", "", baseUrl );
 			}
@@ -42,11 +42,22 @@ package jp.noughts.progression.commands{
 				_verbose = Boolean(verbose)
 			}
 
+			if( initObject===null ){
+				initObject = new Object()
+			}
+			if( !initObject.catchError ){
+				initObject.catchError = _onCatchError;
+			}
 			
 			// 親クラスを初期化する
-			super( _executeFunction, _interruptFunction, null );
+			super( _executeFunction, _interruptFunction, initObject );
 		}
 		
+		private function _onCatchError( c:Command, err:Error ):void{
+			trace( "OpenfishRequest 通信エラー。処理を中断します", err )
+			c.interrupt( true )
+		}
+
 
 		/**
 		 * 実行されるコマンドの実装です。
@@ -61,11 +72,8 @@ package jp.noughts.progression.commands{
 		
 		private function _requestComplete( data:Object ):void {
 			if( data is IOErrorEvent ){
-				//super.throwError( this, new IOError(data.text) );
-				Logger.info( "OpenfishRequest 通信エラー", _route )
-				super.latestData = null;
-				_destroyTimer();// を破棄する
-				super.executeComplete();// 処理を終了する
+				super.throwError( this, new IOError(data.text) );
+				//super.throwError( this, new IOError("OpenfishRequest error") );
 				return;
 			}
 
@@ -114,9 +122,9 @@ package jp.noughts.progression.commands{
 		}
 		
 
-		override public function toString():String {
-			return ObjectUtil.toString( this );
-		}
+		//override public function toString():String {
+		//	return ObjectUtil.toString( this );
+		//}
 		
 		
 	}
