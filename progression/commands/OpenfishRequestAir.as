@@ -37,27 +37,6 @@ package jp.noughts.progression.commands{
 
 				
 		public function OpenfishRequestAir( route:String, method:String=URLRequestMethod.GET, param:Object=null ) {
-			//if( !cocoafish ){
-			//	cocoafish = new Cocoafish( "dd", "", baseUrl );
-			//}
-
-			//var udid:String = getUDID();
-
-			//_route = route;
-			//if( param ){
-			//	_param = param;
-			//	if( method == URLRequestMethod.POST ){
-			//		_param.udid = udid;
-			//	}
-			//} else {
-			//	if( method == URLRequestMethod.POST ){
-			//		_param = {udid: udid}
-			//	}
-			//}
-			
-			//_method = method;
-			
-			//// 親クラスを初期化する
 			super( route, method, param );
 		}
 

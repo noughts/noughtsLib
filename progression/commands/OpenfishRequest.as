@@ -56,6 +56,7 @@ package jp.noughts.progression.commands{
 		private function _onCatchError( c:Command, err:Error ):void{
 			trace( "OpenfishRequest 通信エラー。処理を中断します", err )
 			c.interrupt( true )
+			onError()
 		}
 
 
