@@ -92,7 +92,8 @@ package jp.noughts.utils {
 		  var hex_tab:String = hexcase ? "0123456789ABCDEF" : "0123456789abcdef";
 		  var output:String = "";
 		  var x:Number;
-		  for(var i:Number = 0; i < input.length; i++) {
+		  var len:uint = input.length
+		  for(var i:Number = 0; i < len; i++) {
 		  	x = input.charCodeAt(i);
 		    output += hex_tab.charAt((x >>> 4) & 0x0F)
 		           +  hex_tab.charAt( x        & 0x0F);
@@ -223,9 +224,11 @@ package jp.noughts.utils {
 		 */
 		public static function rstr2binl (input:String):Array {
 		  var output:Array = Array(input.length >> 2);
-		  for(var i:Number = 0; i < output.length; i++)
+		  var len:uint = output.length;
+		  for(var i:Number = 0; i < len; i++)
 		    output[i] = 0;
-		  for(var i:Number = 0; i < input.length * 8; i += 8)
+		  len = input.length * 8
+		  for(var i:Number = 0; i < len; i += 8)
 		    output[i>>5] |= (input.charCodeAt(i / 8) & 0xFF) << (i%32);
 		  return output;
 		}
@@ -235,7 +238,8 @@ package jp.noughts.utils {
 		 */
 		public static function binl2rstr (input:Array):String {
 		  var output:String = "";
-		  for(var i:Number = 0; i < input.length * 32; i += 8)
+		  var len:uint = input.length * 32;
+		  for(var i:Number = 0; i < len; i += 8)
 		    output += String.fromCharCode((input[i>>5] >>> (i % 32)) & 0xFF);
 		  return output;
 		}
@@ -252,8 +256,8 @@ package jp.noughts.utils {
 		  var b:Number = -271733879;
 		  var c:Number = -1732584194;
 		  var d:Number =  271733878;
-		
-		  for(var i:Number = 0; i < x.length; i += 16) {
+		  var len2:uint = x.length;
+		  for(var i:Number = 0; i < len2; i += 16) {
 		    var olda:Number = a;
 		    var oldb:Number = b;
 		    var oldc:Number = c;

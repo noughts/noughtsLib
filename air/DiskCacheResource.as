@@ -6,7 +6,7 @@ package jp.noughts.air{
 	import org.osflash.signals.*;import org.osflash.signals.natives.*;import org.osflash.signals.natives.sets.*;import org.osflash.signals.natives.base.*;
 
 	import flash.filesystem.*;
-	import jp.noughts.utils.*
+	//import jp.noughts.utils.*
 
 	public class DiskCacheResource{
 
@@ -72,7 +72,8 @@ package jp.noughts.air{
 
 		// 指定した id のファイルオブジェクトを返す
 		static private function getFile( id:String ):File{
-			var fileName:String = escapeMultiByte( id )
+			//var fileName:String = escapeMultiByte( id )
+			var fileName:String = MD5.encrypt( id )
 			var dirName:String = fileName.substr( 0,2 )
 			return File.userDirectory.resolvePath( "Library/Caches/"+ dirName +"/"+ fileName )
 		}

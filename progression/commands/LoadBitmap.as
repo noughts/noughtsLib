@@ -101,7 +101,7 @@ package jp.noughts.progression.commands {
 			
 			// メモリキャッシュが存在すれば
 			if ( cache is Resource ) {
-				Logger.info( "LoadBitmap メモリキャッシュがありました" )
+				//Logger.info( "LoadBitmap メモリキャッシュがありました" )
 				// データを保持する
 				super.data = cache.data;
 				
@@ -115,7 +115,7 @@ package jp.noughts.progression.commands {
 				// ディスクキャッシュがあるか？
 				var diskRes:DiskCacheResource = DiskCacheResource.getById( super.request.url )
 				if( diskRes ){
-					Logger.info( "LoadBitmap ディスクキャッシュがありました" )
+					//Logger.info( "LoadBitmap ディスクキャッシュがありました" )
 
 					_loader = new Loader();
 					_loader.contentLoaderInfo.addEventListener( Event.COMPLETE, _complete );
