@@ -10,6 +10,8 @@ package jp.noughts.air{
 
 	public class DiskCacheResource{
 
+		static public var appId:String = "jp.dividual.blink";
+
 		public var toBitmapComplete_sig:Signal = new Signal( Bitmap )
 		public var fileLoadComplete_sig:Signal = new Signal( DiskCacheResource )
 		public var fileLoadFailed_sig:Signal = new Signal( DiskCacheResource )
@@ -55,9 +57,8 @@ package jp.noughts.air{
 
 		static public function getById( id:String ):DiskCacheResource{
 			var file:File = getFile( id )
-			//if( file.exists==false ){
-			//	return null;
-			//}
+			// file.exists は 2ms くらいかかってしまうので、
+			// ここでファイルの存在を判定せずに、実際にロードして IO_ERROR がでるかどうかでファイルの存在をチェック
 
 			//Logger.info( "DiskCacheResource", id +"のロードを開始します。" )
 			var res:DiskCacheResource = new DiskCacheResource( id )
@@ -85,8 +86,10 @@ package jp.noughts.air{
 		// 指定した id のファイルオブジェクトを返す
 		static private function getFile( id:String ):File{
 			var fileName:String = escapeMultiByte( id )
-			var dirName:String = String( _getStringHashNumber( fileName ) )
-			return File.userDirectory.resolvePath( "Library/Caches/"+ dirName +"/"+ fileName )
+			var hash:uint =  _getStringHashNumber( fileName ) 
+			var dirName1:String = String( hash ).substr( 0, 3 )
+			var dirName2:String = String( hash )
+			return File.userDirectory.resolvePath( "Library/Caches/"+ appId +"/resources/"+ dirName1 +"/"+ dirName2 +"/"+ fileName )
 		}
 
 		// 保存するファイルのフォルダを分散させるために、ファイル名文字列からハッシュを返す
