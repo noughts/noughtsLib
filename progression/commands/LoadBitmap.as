@@ -5,6 +5,7 @@
 */
 package jp.noughts.progression.commands {
 	import jp.progression.config.*;import jp.progression.debug.*;import jp.progression.casts.*;import jp.progression.commands.display.*;import jp.progression.commands.lists.*;import jp.progression.commands.managers.*;import jp.progression.commands.media.*;import jp.progression.commands.net.*;import jp.progression.commands.tweens.*;import jp.progression.commands.*;import jp.progression.data.*;import jp.progression.events.*;import jp.progression.loader.*;import jp.progression.*;import jp.progression.scenes.*;import jp.nium.core.debug.Logger;import caurina.transitions.*;import caurina.transitions.properties.*;
+	import org.osflash.signals.*;import org.osflash.signals.natives.*;import org.osflash.signals.natives.sets.*;import org.osflash.signals.natives.base.*;
 
 	import flash.display.*;
 	import flash.errors.IOError;
@@ -114,32 +115,31 @@ package jp.noughts.progression.commands {
 
 				// ディスクキャッシュがあるか？
 				var diskRes:DiskCacheResource = DiskCacheResource.getById( super.request.url )
-				if( diskRes ){
-					//Logger.info( "LoadBitmap ディスクキャッシュがありました" )
-
-					_loader = new Loader();
-					_loader.contentLoaderInfo.addEventListener( Event.COMPLETE, _complete );
-					_loader.contentLoaderInfo.addEventListener( IOErrorEvent.IO_ERROR, _ioError );
-					_loader.contentLoaderInfo.addEventListener( SecurityErrorEvent.SECURITY_ERROR, _securityError );
-					_loader.contentLoaderInfo.addEventListener( ProgressEvent.PROGRESS, super.dispatchEvent );
-					_context.checkPolicyFile = false
-					_loader.loadBytes( diskRes.data, _context )
-				} else {
-					Logger.info( "LoadBitmap キャッシュがないので新規読み込みを開始します" )
-					// ファイルを読み込む
-					_urlLoader = new URLLoader();
-					_urlLoader.dataFormat = URLLoaderDataFormat.BINARY
-					_urlLoader.addEventListener(Event.COMPLETE, _urlLoaderComplete);
-					//_urlLoader.addEventListener(Event.OPEN, Logger.info);
-					//_urlLoader.addEventListener(ProgressEvent.PROGRESS, Logger.info);
-					_urlLoader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, Logger.info);
-					//_urlLoader.addEventListener(HTTPStatusEvent.HTTP_STATUS, Logger.info);
-					_urlLoader.addEventListener(IOErrorEvent.IO_ERROR, Logger.info);
-					_urlLoader.load( toProperRequest( super.request ) );
-				}
+				diskRes.fileLoadComplete_sig.addOnce( _onDiskCacheLoadComplete )
+				diskRes.fileLoadFailed_sig.addOnce( _onDiskCacheLoadFailed )
 			}
 		}
-		
+
+		private function _onDiskCacheLoadComplete( diskRes:DiskCacheResource ){
+			//Logger.info( "LoadBitmap ディスクキャッシュがありました" )
+			_loader = new Loader();
+			_loader.contentLoaderInfo.addEventListener( Event.COMPLETE, _complete );
+			_loader.contentLoaderInfo.addEventListener( IOErrorEvent.IO_ERROR, _ioError );
+			_loader.contentLoaderInfo.addEventListener( SecurityErrorEvent.SECURITY_ERROR, _securityError );
+			//_loader.contentLoaderInfo.addEventListener( ProgressEvent.PROGRESS, super.dispatchEvent );
+			_context.checkPolicyFile = false
+			_loader.loadBytes( diskRes.data, _context )
+		}
+
+		private function _onDiskCacheLoadFailed( diskRes:DiskCacheResource ){
+			//Logger.info( "LoadBitmap キャッシュがないので新規読み込みを開始します" )
+			_urlLoader = new URLLoader();
+			_urlLoader.dataFormat = URLLoaderDataFormat.BINARY
+			_urlLoader.addEventListener(Event.COMPLETE, _urlLoaderComplete);
+			_urlLoader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, Logger.info);
+			_urlLoader.addEventListener(IOErrorEvent.IO_ERROR, Logger.info);
+			_urlLoader.load( toProperRequest( super.request ) );
+		}
 		/**
 		 * @private
 		 */

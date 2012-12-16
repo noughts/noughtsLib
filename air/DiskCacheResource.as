@@ -11,6 +11,8 @@ package jp.noughts.air{
 	public class DiskCacheResource{
 
 		public var toBitmapComplete_sig:Signal = new Signal( Bitmap )
+		public var fileLoadComplete_sig:Signal = new Signal( DiskCacheResource )
+		public var fileLoadFailed_sig:Signal = new Signal( DiskCacheResource )
 
 		private var _data:ByteArray;
 		public function get data():ByteArray{ return _data }
@@ -52,20 +54,30 @@ package jp.noughts.air{
 
 
 		static public function getById( id:String ):DiskCacheResource{
+			var file:File = getFile( id )
+			//if( file.exists==false ){
+			//	return null;
+			//}
+
+			//Logger.info( "DiskCacheResource", id +"のロードを開始します。" )
 			var res:DiskCacheResource = new DiskCacheResource( id )
 			res._data = new ByteArray()
 
-			var file:File = getFile( id )
-			try{
-				var stream:FileStream = new FileStream();
-				stream.open( file , FileMode.READ );
-				stream.readBytes( res._data, 0, file.size );
+			var stream:FileStream = new FileStream();
+			var ioError:NativeSignal = new NativeSignal( stream, IOErrorEvent.IO_ERROR, IOErrorEvent )
+			var complete:NativeSignal = new NativeSignal( stream, Event.COMPLETE, Event )
+			ioError.addOnce( function(){
 				stream.close ();
-				return res
-			} catch (e:Error){
-				Logger.info( "ディスクキャッシュ読み込み失敗", file.nativePath, e )
-			}
-			return null
+				res.fileLoadFailed_sig.dispatch( res )
+			} )
+			complete.addOnce( function(e:Event){
+				ioError.removeAll()
+				stream.readBytes( res._data, 0, stream.bytesAvailable );
+				stream.close ();
+				res.fileLoadComplete_sig.dispatch( res )
+			} )
+			stream.openAsync( file, FileMode.READ )
+			return res
 		}
 
 
