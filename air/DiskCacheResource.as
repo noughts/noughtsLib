@@ -72,12 +72,42 @@ package jp.noughts.air{
 
 		// 指定した id のファイルオブジェクトを返す
 		static private function getFile( id:String ):File{
-			//var fileName:String = escapeMultiByte( id )
-			var fileName:String = MD5.encrypt( id )
-			var dirName:String = fileName.substr( 0,2 )
+			var fileName:String = escapeMultiByte( id )
+			var dirName:String = String( _getStringHashNumber( fileName ) )
 			return File.userDirectory.resolvePath( "Library/Caches/"+ dirName +"/"+ fileName )
 		}
 
+		// 保存するファイルのフォルダを分散させるために、ファイル名文字列からハッシュを返す
+		// MD5だと重いので、手動でやる
+		static private function _getStringHashNumber( name_str:String ):uint{
+			var len:uint = name_str.length;
+			var out:uint = 0
+			for( var i:int=0; i<len; i++ ){
+				out += name_str.charCodeAt(i)
+			}
+			return out;
+		}
 
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
