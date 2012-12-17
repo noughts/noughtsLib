@@ -1,16 +1,10 @@
 ﻿package jp.noughts.db.activeRecord
 {
-	import flash.data.SQLColumnSchema;
-	import flash.data.SQLConnection;
-	import flash.data.SQLResult;
-	import flash.data.SQLSchemaResult;
-	import flash.data.SQLStatement;
-	import flash.data.SQLTableSchema;
+	import jp.progression.config.*;import jp.progression.debug.*;import jp.progression.casts.*;import jp.progression.commands.display.*;import jp.progression.commands.lists.*;import jp.progression.commands.managers.*;import jp.progression.commands.media.*;import jp.progression.commands.net.*;import jp.progression.commands.tweens.*;import jp.progression.commands.*;import jp.progression.data.*;import jp.progression.events.*;import jp.progression.loader.*;import jp.progression.*;import jp.progression.scenes.*;import jp.nium.core.debug.Logger;import caurina.transitions.*;import caurina.transitions.properties.*;
+
+	import flash.data.*;
 	import flash.events.*
-	import flash.utils.Proxy;
-	import flash.utils.flash_proxy;
-	import flash.utils.getDefinitionByName;
-	import flash.utils.getQualifiedClassName;
+	import flash.utils.*;
 	import jp.nium.core.debug.Logger;
 
 	import mx.utils.*;
@@ -28,6 +22,8 @@
 	{
 		sql_db static var tableSchemaCache:Object = {};
 		sql_db static var columnSchemaCache:Object = {};
+
+		//public var saveAllComplete_sig:Signal = new Signal()
 
 		/**
 		 * Stores the runtime properties of related objects and arrays
@@ -109,46 +105,78 @@
 
 
 		public function saveAll( data_vec:* ):void{
-			if( !data_vec || data_vec.length == 0 ){
-				Logger.info( "ActiveRecord.saveAll", "data_vecが空なので保存しません" )
-				return;
-			}
+			var self = this;
+			var conn:SQLConnection = DB.getConnection(defaultConnectionAlias);
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+				new Listen( conn, SQLEvent.OPEN ),
+				function(){
+					Logger.info( "SQLConnection OPENED" )
+					conn.begin()
+				},
+				new Listen( conn, SQLEvent.BEGIN ),
+				function(){
+					Logger.info( "SQLConnection transaction began" )
+
+				},
+			null);
 
 			// set up the variables to save this object to the database
 			var tableName:String = schemaTranslation.getTable(className);
 			var primaryKey:String = schemaTranslation.getPrimaryKey(className);
-			var parameters:Array = [];
-			var sql:String = ""
-
 			var data:Object = getDBProperties();
 			delete data[primaryKey];
 			var fields:Array = [];
 			for (var fieldName:String in data){
 				fields.push(fieldName);
 			}
+			var fieldsLength:uint = fields.length;
+			var fieldsJoined:String = fields.join(", ")
 
-			sql += "INSERT INTO " + tableName + " (" + fields.join(", ") + ")";
+			var len:uint = data_vec.length
+			for( var i:int=0; i<len; i++ ){
+				slist.addCommand(
+					new Var( "i", i ),
+					function(){
+						//Logger.info( "statement execute" )
+						var i:uint = this.getVar( "i" )
+						var stmt:SQLStatement = new SQLStatement()
+						stmt.sqlConnection = conn;
+						var sql:String = "INSERT INTO " + tableName + " (" + fieldsJoined + ") VALUES (?";
+						for( var j:uint=0; j < fieldsLength-1; j++ ){
+							sql += ", ?";
+						}
+						sql += ")";
+						stmt.text = sql;
 
-			for( var i:int=0; i<data_vec.length; i++ ){
-				var data:Object = data_vec[i].getDBProperties();
-				delete data[primaryKey];
-				for (var fieldName:String in data){
-					parameters.push(data[fieldName]);
-				}
-
-				sql += "SELECT ?";
-				for (var j:uint = 0; j < fields.length - 1; j++){
-					sql += ", ?";
-				}
-				if( i==data_vec.length-1 ){
-					sql += ";";
-				} else {
-					sql += "UNION ";
-				}
+						var data:Object = data_vec[i].getDBProperties();
+						delete data[primaryKey];
+						var counter:uint = 0
+						for (var fieldName:String in data){
+							stmt.parameters[counter] = data[fieldName];
+							counter++;
+						}
+						stmt.execute()
+						slist.insertCommand( new Listen( stmt, SQLEvent.RESULT ) )
+					},
+				null);
 			}
-			//trace( sql )
 
-			var result:Object = query(sql, parameters);
+			slist.addCommand(
+				conn.commit,
+				new Listen( conn, SQLEvent.COMMIT ),
+				function(){
+					Logger.info( "SQLConnection commit complete!!!" )
+					self.dispatchEvent( new Event(Event.COMPLETE) );
+				},
+			null);
+
+
+			slist.execute();
+			// 2回目以降は接続済みになるので、openedをdispatchする
+			if( conn.connected ){
+				conn.dispatchEvent( new SQLEvent(SQLEvent.OPEN) )
+			}
 		}
 
 
