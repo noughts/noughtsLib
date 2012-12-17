@@ -199,7 +199,7 @@ package jp.noughts.progression.commands {
 		 * URLLoader のデータが正常にロードされたときに送出されます。
 		 */
 		private function _urlLoaderComplete( e:Event ):void {
-			Logger.info( "URLLoader complete", _urlLoader.data.length )
+			//Logger.info( "URLLoader complete", _urlLoader.data.length )
 			new DiskCacheResource( super.request.url, _urlLoader.data )
 
 			_loader = new Loader();

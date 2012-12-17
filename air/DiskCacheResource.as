@@ -27,7 +27,7 @@ package jp.noughts.air{
 				stream.open( file , FileMode.WRITE );
 				stream.writeBytes( data );
 				stream.close ();
-				Logger.info( "ディスクキャッシュ保存しました。", file.nativePath )
+				//Logger.info( "ディスクキャッシュ保存しました。", file.nativePath )
 			}
 		}
 
