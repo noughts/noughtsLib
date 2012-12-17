@@ -107,6 +107,52 @@
 			return true;
 		}
 
+
+		public function saveAll( data_vec:* ):void{
+			if( !data_vec || data_vec.length == 0 ){
+				Logger.info( "ActiveRecord.saveAll", "data_vecが空なので保存しません" )
+				return;
+			}
+
+			// set up the variables to save this object to the database
+			var tableName:String = schemaTranslation.getTable(className);
+			var primaryKey:String = schemaTranslation.getPrimaryKey(className);
+			var parameters:Array = [];
+			var sql:String = ""
+
+			var data:Object = getDBProperties();
+			delete data[primaryKey];
+			var fields:Array = [];
+			for (var fieldName:String in data){
+				fields.push(fieldName);
+			}
+
+			sql += "INSERT INTO " + tableName + " (" + fields.join(", ") + ")";
+
+			for( var i:int=0; i<data_vec.length; i++ ){
+				var data:Object = data_vec[i].getDBProperties();
+				delete data[primaryKey];
+				for (var fieldName:String in data){
+					parameters.push(data[fieldName]);
+				}
+
+				sql += "SELECT ?";
+				for (var j:uint = 0; j < fields.length - 1; j++){
+					sql += ", ?";
+				}
+				if( i==data_vec.length-1 ){
+					sql += ";";
+				} else {
+					sql += "UNION ";
+				}
+			}
+			//trace( sql )
+
+			var result:Object = query(sql, parameters);
+		}
+
+
+
 		/**
 		 * Saves the object to the database.
 		 *
