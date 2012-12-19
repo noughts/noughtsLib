@@ -111,7 +111,7 @@ package jp.noughts.air{
 			var fmt:TextFormat = new TextFormat()
 			fmt.font = "Hiragino Kaku Gothic ProN"
 			fmt.size = 32;
-			hintText_txt.autoSize = "left"
+			//hintText_txt.autoSize = "left"
 			hintText_txt.defaultTextFormat = fmt;
 			hintText_txt.textColor = hintColor;
 			hintText_txt.y = 2
@@ -122,12 +122,12 @@ package jp.noughts.air{
 
 		private function onAddedToStage(e:Event):void{
 			hintText_txt.addEventListener( MouseEvent.CLICK, onHintTextClick );
-			addStageText();
+			//addStageText();
 		}
 
 		
 		private function onRemoveFromStage(e:Event):void{
-			hintText_txt.removeEventListener( MouseEvent.CLICK, addStageText );
+			hintText_txt.removeEventListener( MouseEvent.CLICK, onHintTextClick );
 			this.removeEventListener( Event.ENTER_FRAME, _onEnterFrame );
 			//this.st.dispose();
 			this.st.stage = null;
@@ -150,7 +150,6 @@ package jp.noughts.air{
 					signals.focusOut.add( _freezeOnFocusOut )
 				}
 				stageTextAdded = true;
-
 			}
 		}
 
@@ -205,7 +204,6 @@ package jp.noughts.air{
 		private function onHintTextClick(e){
 			addStageText();
 			setTimeout( this.st.assignFocus, 30 )
-
 		}
 
 
@@ -372,9 +370,9 @@ package jp.noughts.air{
 				unfreeze()
 			}
 			this.st.text = text;
-			//if( text != "" ){
-			//	addStageText()
-			//}
+			if( text != "" ){
+				addStageText()
+			}
 			_onChangeText()
 		}
 
@@ -455,11 +453,10 @@ package jp.noughts.air{
 		
 		//// Functions that must be overridden to make this work ///
 		
-		public override function set width(width:Number):void
-		{
-			this._width = width;
+		public override function set width( val:Number ):void{
+			hintText_txt.width = val;
+			this._width = val;
 			this.render();
-
 		}
 		
 		public override function get width():Number
