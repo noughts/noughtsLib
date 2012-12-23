@@ -41,7 +41,18 @@ package jp.noughts.progression.commands{
 		}
 
 
-		// デバッグ用に、EncryptedLocalStore をリセットします。
+		// ログイン情報が保存されているかチェックします。
+		static public function get isRegistered():Boolean{
+			var storedUsername:ByteArray = EncryptedLocalStore.getItem('openfishAutoLoginUsername');
+			var storedPassword:ByteArray = EncryptedLocalStore.getItem('openfishAutoLoginPassword');
+			if( storedUsername && storedPassword ){
+				return true
+			} else {
+				return false;
+			}
+		}
+
+		// EncryptedLocalStore をリセットします。
 		static public function resetELS():void{
 			EncryptedLocalStore.reset();
 		}
