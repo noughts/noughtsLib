@@ -82,6 +82,12 @@ package jp.noughts.progression.commands{
 				Logger.info( ObjectUtil.toString(data) )
 			}
 
+
+			if( data.meta.status=="fail" ){
+				super.throwError( this, new IOError("status が fail です") );
+				return;
+			}
+
 			
 			super.latestData = data;
 			_destroyTimer();// を破棄する
