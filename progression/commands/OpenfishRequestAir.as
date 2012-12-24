@@ -45,7 +45,10 @@ package jp.noughts.progression.commands{
 		static public function get isRegistered():Boolean{
 			var storedUsername:ByteArray = EncryptedLocalStore.getItem('openfishAutoLoginUsername');
 			var storedPassword:ByteArray = EncryptedLocalStore.getItem('openfishAutoLoginPassword');
+			var facebookAccessToken:ByteArray = EncryptedLocalStore.getItem('openfishFacebookAccessToken');
 			if( storedUsername && storedPassword ){
+				return true
+			} else if( facebookAccessToken ){
 				return true
 			} else {
 				return false;
@@ -90,16 +93,24 @@ package jp.noughts.progression.commands{
 			slist.addCommand(
 				function(){
 					Logger.info( "自動ログインします。" )
-					var storedUsername:ByteArray = EncryptedLocalStore.getItem('openfishAutoLoginUsername');
-					var storedPassword:ByteArray = EncryptedLocalStore.getItem('openfishAutoLoginPassword');
+					var facebookAccessToken_ba:ByteArray = EncryptedLocalStore.getItem('openfishFacebookAccessToken');
 
-					var username_str:String = storedUsername ? storedUsername.readUTFBytes( storedUsername.length ) : "";
-					var password_str:String = storedPassword ? storedPassword.readUTFBytes( storedPassword.length ) : "";
-
-					slist.insertCommand( new OpenfishRequest( "v1/users/login.json", URLRequestMethod.POST, {
-						login: username_str,
-						password: password_str
-					} ));
+					if( facebookAccessToken_ba ){
+						var accessToken:String = facebookAccessToken_ba.readUTFBytes( facebookAccessToken_ba.length );
+						slist.insertCommand( new OpenfishRequest( "v1/users/external_account_login.json", URLRequestMethod.POST, {
+							type: "facebook",
+							token: accessToken
+						} ));
+					} else {
+						var storedUsername:ByteArray = EncryptedLocalStore.getItem('openfishAutoLoginUsername');
+						var storedPassword:ByteArray = EncryptedLocalStore.getItem('openfishAutoLoginPassword');
+						var username_str:String = storedUsername ? storedUsername.readUTFBytes( storedUsername.length ) : "";
+						var password_str:String = storedPassword ? storedPassword.readUTFBytes( storedPassword.length ) : "";
+						slist.insertCommand( new OpenfishRequest( "v1/users/login.json", URLRequestMethod.POST, {
+							login: username_str,
+							password: password_str
+						} ));
+					}
 				},
 				function(){
 					slist.latestData = this.latestData;
@@ -112,6 +123,23 @@ package jp.noughts.progression.commands{
 		}
 
 
+		static public function facebookLogin( accessToken:String ):SerialList{
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+				new OpenfishRequest( "v1/users/external_account_login.json", URLRequestMethod.POST, {
+					type: "facebook",
+					token: accessToken
+				} ),
+				function(){
+					Logger.info( "facebookログイン完了" )
+					var accessToken_ba:ByteArray = new ByteArray();
+					accessToken_ba.writeUTFBytes( accessToken );
+					EncryptedLocalStore.setItem( 'openfishFacebookAccessToken', accessToken_ba );
+					slist.parent.latestData = this.latestData;
+				},
+			null);
+			return slist;
+		}
 
 
 
