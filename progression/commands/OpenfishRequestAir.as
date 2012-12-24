@@ -109,17 +109,17 @@ package jp.noughts.progression.commands{
 						slist.insertCommand( new OpenfishRequest( "v1/users/login.json", URLRequestMethod.POST, {
 							login: username_str,
 							password: password_str
-						} ));
-					}
-				},
-				function(){
-					slist.latestData = this.latestData;
-					if( this.latestData.meta.status=="fail" ){
-						slist.insertCommand( autoCreateUser() )
+						}, null, {catchError:onAutoLoginError} ));
 					}
 				},
 			null);
 			return slist;
+		}
+
+		static private function onAutoLoginError( com:Command, err:Error ):void{
+			Logger.info( "自動ログインに失敗したので自動ユーザー作成します。" )
+			com.parent.insertCommand( autoCreateUser() )
+			com.executeComplete()
 		}
 
 
