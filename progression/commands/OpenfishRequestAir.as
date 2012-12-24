@@ -54,6 +54,7 @@ package jp.noughts.progression.commands{
 
 		// EncryptedLocalStore をリセットします。
 		static public function resetELS():void{
+			Logger.warn( "*************** OpenfishRequestAir ELSをリセットします ******************" )
 			EncryptedLocalStore.reset();
 		}
 		
