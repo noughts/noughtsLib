@@ -112,6 +112,10 @@ package jp.noughts.progression.commands{
 						}, null, {catchError:onAutoLoginError} ));
 					}
 				},
+				function(){
+					Logger.info( "自動ログイン完了!" )
+					slist.latestData = this.latestData;
+				},
 			null);
 			return slist;
 		}
