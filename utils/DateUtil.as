@@ -24,7 +24,11 @@
 		//
 		//
 		//
-		static public function getGap (now_num:Number, target_num:Number):String {
+		static public function getRelativeTime( target_num:uint, now_num:uint=0 ):String {
+			if( now_num == 0 ){
+				now_num = new Date().getTime() / 1000;
+			}
+
 			var gap_num:int = Math.abs (now_num - target_num);
 			var out_str:String;
 			if (gap_num < 60) {
