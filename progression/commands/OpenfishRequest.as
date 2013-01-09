@@ -10,6 +10,8 @@ package jp.noughts.progression.commands{
 	import jp.progression.core.PackageInfo;
 	import jp.noughts.cocoafish.sdk.Cocoafish;
 	import jp.noughts.utils.*;
+	import jp.dividual.nativeExtensions.utils.*;
+
 
 	public class OpenfishRequest extends Command {
 		
@@ -69,9 +71,13 @@ package jp.noughts.progression.commands{
 				isSecure = true;
 			}
 			cocoafish.sendRequest( _route, _method, _param, _requestComplete, isSecure );
+			NativeUtils.setNetworkActivityIndicatorVisible( true );
 		}
 		
+
+
 		private function _requestComplete( data:Object ):void {
+			NativeUtils.setNetworkActivityIndicatorVisible( false );
 			if( data is IOErrorEvent ){
 				super.throwError( this, new IOError(data.text) );
 				//super.throwError( this, new IOError("OpenfishRequest error") );
