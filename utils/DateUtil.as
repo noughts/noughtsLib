@@ -29,24 +29,22 @@
 				now_num = new Date().getTime() / 1000;
 			}
 
-			var gap_num:int = Math.abs (now_num - target_num);
+			var gap_num:int = now_num - target_num;
 			var out_str:String;
-			if (gap_num < 60) {
-				out_str = gap_num + "秒";
+			if( gap_num < 10 ){
+				out_str = "数秒前"
+			} else if (gap_num < 60) {
+				out_str = gap_num + "秒前";
 			} else if (gap_num < (60 * 60)) {
-				out_str = Math.floor (gap_num / 60) + "分";
+				out_str = Math.floor (gap_num / 60) + "分前";
 			} else if (gap_num < (60 * 60 * 24)) {
-				out_str = Math.floor (gap_num / 60 / 60) + "時間";
+				out_str = Math.floor (gap_num / 60 / 60) + "時間前";
 			} else {
-				out_str = Math.floor (gap_num / 60 / 60 / 24) + "日";
-			}
-			if (now_num >= target_num) {
-				out_str += "前";
-			} else {
-				out_str += "後";
+				out_str = Math.floor (gap_num / 60 / 60 / 24) + "日前";
 			}
 			return out_str;
 		}
+
 		static public function getGap_en (now_num:Number, target_num:Number):String {
 			var gap_num:int = Math.abs (now_num - target_num);
 			var out_str:String;
