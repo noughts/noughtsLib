@@ -111,12 +111,12 @@
 			slist.addCommand(
 				new Listen( conn, SQLEvent.OPEN ),
 				function(){
-					Logger.info( "SQLConnection OPENED" )
+					//Logger.info( "SQLConnection OPENED" )
 					conn.begin()
 				},
 				new Listen( conn, SQLEvent.BEGIN ),
 				function(){
-					Logger.info( "SQLConnection transaction began" )
+					//Logger.info( "SQLConnection transaction began" )
 
 				},
 			null);
@@ -166,7 +166,7 @@
 				conn.commit,
 				new Listen( conn, SQLEvent.COMMIT ),
 				function(){
-					Logger.info( "SQLConnection commit complete!!!" )
+					//Logger.info( "SQLConnection commit complete!!!" )
 					self.dispatchEvent( new Event(Event.COMPLETE) );
 				},
 			null);
