@@ -546,7 +546,7 @@
 			stmt.sqlConnection = DB.getConnection(defaultConnectionAlias);
 			sqlConnectionOpened_sig = new NativeSignal( stmt.sqlConnection, SQLEvent.OPEN, SQLEvent )
 			sqlConnectionOpened_sig.addOnce( function(e:SQLEvent):void{
-				Logger.info( "ActiveRecord asyncQuery connection opened" )
+				//Logger.info( "ActiveRecord asyncQuery connection opened" )
 				if (params.length == 1 && params[0] is Array)
 					params = params[0];
 
