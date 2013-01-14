@@ -104,7 +104,9 @@ package jp.noughts.progression.commands {
 			if ( cache is Resource ) {
 				//Logger.info( "LoadBitmap メモリキャッシュがありました" )
 				// データを保持する
-				super.data = cache.data;
+				var bd:BitmapData = cache.data.bitmapData.clone();
+				var _bmp:Bitmap = new Bitmap( bd )
+				super.data = _bmp;
 				
 				// イベントを送出する
 				super.dispatchEvent( new ProgressEvent( ProgressEvent.PROGRESS, false, false, cache.bytesTotal, cache.bytesTotal ) );
