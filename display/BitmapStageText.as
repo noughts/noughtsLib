@@ -28,6 +28,7 @@ package jp.noughts.display{
 		private var bd:BitmapData
 		private var bmp:Bitmap
 		private var _width:uint
+		private var _text:String
 
 		public function BitmapStageText( $width:uint ){
 			if( sharedStage==null ){
@@ -35,15 +36,16 @@ package jp.noughts.display{
 			}
 
 			_width = $width;
-			if( singlelineStageText == null ){
+			if( multilineStageText == null ){
 				//var opt1:StageTextInitOptions = new StageTextInitOptions( false )
 				//singlelineStageText = new StageText( opt1 )
 				//singlelineStageText.fontSize = 32
 				var opt2:StageTextInitOptions = new StageTextInitOptions( true )
 				multilineStageText = new StageText( opt2 )
-				multilineStageText.fontSize = 32
 				multilineStageText.visible = false
 			}
+			fontSize = 32
+			fontWeight = "normal"
 
 		}
 
@@ -56,11 +58,11 @@ package jp.noughts.display{
 
 
 		public function set text( val:String ):void{
-			multilineStageText.text = val;
+			_text = val;
 			update()
 		}
 		public function get text():String{
-			return multilineStageText.text;
+			return _text;
 		}
 
 		public function set fontSize( val:uint ):void{
@@ -73,7 +75,7 @@ package jp.noughts.display{
 			var viewPort:Rectangle = new Rectangle( 0, 0, _width, 1024 )
 			multilineStageText.viewPort = viewPort;
 			multilineStageText.stage = sharedStage
-			multilineStageText.text = this.text
+			multilineStageText.text = _text
 
 			bd = new BitmapData( viewPort.width, viewPort.height, true, 0 )
 			multilineStageText.drawViewPortToBitmapData( bd )
@@ -89,7 +91,7 @@ package jp.noughts.display{
 		// BitmapData の周りの透明部分をトリムする
 		private function trimWhiteSpace( source_bd:BitmapData ):BitmapData{
 			var content_rect:Rectangle = source_bd.getColorBoundsRect( 0xFF000000, 0x00000000, false )
-			trace(content_rect)
+			//trace(content_rect)
 
 			var content_bd:BitmapData = new BitmapData( content_rect.width, content_rect.height, true, 0 )
 			content_bd.copyPixels( source_bd, content_rect, new Point() )
