@@ -24,7 +24,7 @@ package jp.noughts.display{
 
 		static public var sharedStage:Stage
 		static private var singlelineStageText:StageText
-		static private var multilineStageText:StageText
+		private var multilineStageText:StageText
 		private var bd:BitmapData
 		private var bmp:Bitmap
 		private var _width:uint
@@ -32,18 +32,18 @@ package jp.noughts.display{
 
 		public function BitmapStageText( $width:uint ){
 			if( sharedStage==null ){
-				throw new Error("sharedStageをせっていしてください");
+				throw new Error("BitmapStageText.sharedStageをせっていしてください");
 			}
 
 			_width = $width;
-			if( multilineStageText == null ){
-				//var opt1:StageTextInitOptions = new StageTextInitOptions( false )
-				//singlelineStageText = new StageText( opt1 )
-				//singlelineStageText.fontSize = 32
-				var opt2:StageTextInitOptions = new StageTextInitOptions( true )
-				multilineStageText = new StageText( opt2 )
-				multilineStageText.visible = false
-			}
+
+			// StageText インスタンスを static にすることも試しましたが、
+			// 描画するために時間が必要なため複数同時使用ができず
+			// 結局、各 BitmapStageText に１つずつ StageText インスタンスをもたせることにしました
+			var opt2:StageTextInitOptions = new StageTextInitOptions( true )
+			multilineStageText = new StageText( opt2 )
+			multilineStageText.visible = false
+			multilineStageText.stage = sharedStage
 			fontSize = 32
 			fontWeight = "normal"
 
@@ -74,7 +74,6 @@ package jp.noughts.display{
 
 			var viewPort:Rectangle = new Rectangle( 0, 0, _width, 1024 )
 			multilineStageText.viewPort = viewPort;
-			multilineStageText.stage = sharedStage
 			multilineStageText.text = _text
 
 			bd = new BitmapData( viewPort.width, viewPort.height, true, 0 )
