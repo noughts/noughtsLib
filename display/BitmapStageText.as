@@ -46,6 +46,8 @@ package jp.noughts.display{
 			multilineStageText.stage = sharedStage
 			fontSize = 32
 			fontWeight = "normal"
+			mouseEnabled = false
+			mouseChildren = false;
 
 		}
 
