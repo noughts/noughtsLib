@@ -23,12 +23,13 @@ package jp.noughts.display{
 
 	public class StandardButton extends Sprite {
 
-		public var view;
 		private var _signals:InteractiveObjectSignalSet;
 		public function get signals():InteractiveObjectSignalSet{
 			return _signals ||= new InteractiveObjectSignalSet(this);
 		}
 
+		private var _view;
+		public function get view():DisplayObject{ return _view }
 
 		static public function convert( mc:DisplayObject ):StandardButton{
 			// オリジナルの情報を保持
@@ -46,8 +47,8 @@ package jp.noughts.display{
 			return db;
 		}
 
-		public function StandardButton( _view:DisplayObject ) {
-			view = _view;
+		public function StandardButton( $view:DisplayObject ) {
+			_view = $view;
 			view.x = 0;
 			view.y = 0;
 			addChild( view );
