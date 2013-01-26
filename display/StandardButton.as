@@ -53,6 +53,7 @@ package jp.noughts.display{
 			view.y = 0;
 			addChild( view );
 			this.mouseChildren = false;
+			this.buttonMode = true
 
 			signals.mouseUp.add( _onMouseUp )
 			signals.mouseDown.add( _onMouseDown )
@@ -92,8 +93,8 @@ package jp.noughts.display{
 			}
 			blink_list = new LoopList()
 			blink_list.addCommand(
-				new DoTweener( this, {_brightness:0.5, time:0.5} ),
-				new DoTweener( this, {_brightness:0, time:0.5} ),
+				new DoTweener( view, {_brightness:0.5, time:0.5} ),
+				new DoTweener( view, {_brightness:0, time:0.5} ),
 			null);
 			blink_list.execute()
 		}
@@ -103,11 +104,13 @@ package jp.noughts.display{
 			}
 			blink_list.stop()
 			blink_list = null;
-			Tweener.addTween( this, {_brightness:0, time:0} );
+			Tweener.addTween( view, {_brightness:0, time:0} );
 		}
 
 
 		private function _onMouseDown( e ):void {
+			stopBlink()
+			
 			var list = new ParallelList();
 			list.addCommand(
 				new DoTweener( view, {"_brightness":-0.66, time:0} )
