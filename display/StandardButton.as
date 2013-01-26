@@ -29,7 +29,7 @@ package jp.noughts.display{
 		}
 
 		private var _view;
-		public function get view():DisplayObject{ return _view }
+		public function get view():MovieClip{ return _view }
 
 		static public function convert( mc:DisplayObject ):StandardButton{
 			// オリジナルの情報を保持
@@ -82,6 +82,28 @@ package jp.noughts.display{
 				this.scaleX = this.scaleY = 0;
 				Tweener.addTween( this, {"_scale":1, time:0.33, transition:"easeOutBack"} )
 			}
+		}
+
+		// ゆっくり明滅させる
+		private var blink_list:LoopList
+		public function startBlink(){
+			if( blink_list ){
+				return;
+			}
+			blink_list = new LoopList()
+			blink_list.addCommand(
+				new DoTweener( this, {_brightness:0.5, time:0.5} ),
+				new DoTweener( this, {_brightness:0, time:0.5} ),
+			null);
+			blink_list.execute()
+		}
+		public function stopBlink(){
+			if( !blink_list ){
+				return;
+			}
+			blink_list.stop()
+			blink_list = null;
+			Tweener.addTween( this, {_brightness:0, time:0} );
 		}
 
 
