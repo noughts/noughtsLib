@@ -64,6 +64,17 @@
 			connection = DB.getConnection(defaultConnectionAlias, true);
 		}
 
+
+
+		// インデックスを作成する
+		// 例: GroupModel.model().createIndex( ["remote_id"] )
+		public function createIndex( columnNames_array:Array ):void{
+			var tableName:String = schemaTranslation.getTable(className);
+			var indexName:String = "idx_"+ tableName +"_"+ columnNames_array.join("_");
+			var columnNames_str:String = columnNames_array.join(",")
+			query( "CREATE INDEX IF NOT EXISTS "+ indexName +" ON "+ tableName +" ("+ columnNames_str +")" )
+		}
+
 		/**
 		 * Loads the object from the database by the id passed
 		 *
