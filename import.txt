@@ -3,3 +3,4 @@ import flash.events.*;import flash.display.*;import flash.system.*;import flash.
 import mx.utils.*;
 import org.osflash.signals.*;import org.osflash.signals.natives.*;import org.osflash.signals.natives.sets.*;import org.osflash.signals.natives.base.*;
 
+import a24.tween.*;import a24.external.progression.commands.*
