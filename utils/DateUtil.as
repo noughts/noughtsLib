@@ -2,6 +2,20 @@
 
 	public class DateUtil {
 
+
+
+		public static function getStartOfWeek(date:Date):Date {
+			return getStartOfDay(new Date(date.fullYear, date.month, date.date - date.day));
+		}
+
+		public static function getStartOfDay(date:Date):Date {
+			return new Date(date.fullYear, date.month, date.date, 0, 0, 0, 0);
+		}
+
+		public static function getStartOfMonth(date:Date):Date {
+			return getStartOfDay(new Date(date.fullYear, date.month, 1));
+		}
+
 		static public function format (unixTime_num:uint):String {
 			var date:Date = new Date(unixTime_num * 1000);
 			var y:uint = date.getFullYear();
