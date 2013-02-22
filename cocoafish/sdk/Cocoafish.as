@@ -23,11 +23,11 @@ package jp.noughts.cocoafish.sdk {
 	import org.iotashan.oauth.OAuthSignatureMethod_HMAC_SHA1;
 	
 	public class Cocoafish {
-		var appKey:String = null;
-		var sessionId:String = null;
-		var consumer:OAuthConsumer = null;
-		var listeners:Array = null;
-		var apiBaseURL:String = null;
+		private var appKey:String = null;
+		private var sessionId:String = null;
+		private var consumer:OAuthConsumer = null;
+		private var listeners:Array = null;
+		private var apiBaseURL:String = null;
 		
 		public function Cocoafish(key:String, oauthSecret:String = "", baseURL:String = null) {
 			if(oauthSecret == "") {

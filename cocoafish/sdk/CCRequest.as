@@ -3,13 +3,13 @@ package jp.noughts.cocoafish.sdk {
 	import flash.net.URLLoader;
 
 	public class CCRequest {
-		var loader:URLLoader = null;
-		var fileUploader:FileReference = null;
+		private var loader:URLLoader = null;
+		private var fileUploader:FileReference = null;
 		
 		public function CCRequest(request:Object) {
-			if(request instanceof URLLoader) {
+			if(request is URLLoader) {
 				loader = request as URLLoader;
-			} else if (request instanceof FileReference) {
+			} else if (request is FileReference) {
 				fileUploader = request as FileReference;
 			}
 		}
