@@ -94,7 +94,7 @@ package jp.noughts.progression.commands{
 			if( _verbose ){
 				Logger.info( ObjectUtil.toString(data) );
                 var d = new Date();
-                Logger.info( "ElapsedTime:", d.getTime() - _requestStartedAt );                    
+                Logger.info( "ElapsedTime:", d.getTime() - _requestStartedAt, _route, _method );                    
 			}
 
 
