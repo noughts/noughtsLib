@@ -22,6 +22,7 @@ package jp.noughts.progression.commands{
 		protected var _param:Object
 		protected var _method:String;
 		private var _verbose:Boolean = false;
+        private var _requestStartedAt = 0;
 
 				
 		public function OpenfishRequest( route:String, method:String, param:Object=null, verbose:Object=null, initObject:Object=null ) {
@@ -66,6 +67,12 @@ package jp.noughts.progression.commands{
 		 * 実行されるコマンドの実装です。
 		 */
 		private function _executeFunction():void {
+            
+            if(_verbose) {
+                var d = new Date();
+                _requestStartedAt = d.getTime();
+            }
+
 			var isSecure:Boolean = false;
 			if( getRunsOnGAEServer() ){
 				isSecure = true;
@@ -85,7 +92,9 @@ package jp.noughts.progression.commands{
 			}
 
 			if( _verbose ){
-				Logger.info( ObjectUtil.toString(data) )
+				Logger.info( ObjectUtil.toString(data) );
+                var d = new Date();
+                Logger.info( "ElapsedTime:", d.getTime() - _requestStartedAt );                    
 			}
 
 
