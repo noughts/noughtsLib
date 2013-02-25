@@ -277,7 +277,7 @@ package jp.noughts.cocoafish.sdk {
 				if(sessionId != null) {
 					setSessionId(sessionId);
 				}
-				json.json = data;
+				//json.json = data;
 				callback(json);
 			} else {
 				callback(new Object());
