@@ -5,8 +5,8 @@ package jp.noughts.progression.commands{
 	import flash.utils.*;
 	import jp.progression.commands.*;
 	import jp.nium.core.debug.Logger;
-	import jp.nium.utils.ObjectUtil;
-	//import mx.utils.*;
+	//import jp.nium.utils.ObjectUtil;
+	import mx.utils.*;
 	import jp.progression.core.PackageInfo;
 	import jp.noughts.cocoafish.sdk.Cocoafish;
 	import jp.noughts.utils.*;
