@@ -16,6 +16,7 @@ package jp.noughts.cocoafish.sdk {
 	//import mx.collections.Array;
 	//import mx.utils.URLUtil;
 	import jp.nium.utils.ArrayUtil;
+	import jp.nium.core.debug.Logger
 	
 	import org.iotashan.oauth.IOAuthSignatureMethod;
 	import org.iotashan.oauth.OAuthConsumer;
@@ -219,6 +220,7 @@ package jp.noughts.cocoafish.sdk {
 				});
 				
 				//send request
+				Logger.info( "Cocoafish request start: url= "+ request.url )
 				loader.load(request);
 				return new CCRequest(loader);
 			}

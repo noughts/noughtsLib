@@ -23,21 +23,20 @@ package jp.noughts.progression.commands{
 		protected var _method:String;
 		private var _verbose:Boolean = false;
 		private var _requestStartedAt = 0;
+		private var _isSecure:Boolean = false;
 
 				
-		public function OpenfishRequest( route:String, method:String, param:Object=null, verbose:Object=null, initObject:Object=null ) {
+		public function OpenfishRequest( route:String, method:String, param:Object=null, verbose:Object=null, isSecure:Boolean=false, initObject:Object=null ) {
 			if( !cocoafish ){
 				cocoafish = new Cocoafish( "dd", "", baseUrl );
 			}
 
-			//if( param && param is ByteArray==false && param["photo"] ){
-			//	Logger.info( "photoパラメータがあったのでエンコードします。" )
-			//	param["photo"] = Base64.encode( param["photo"] )
-			//}
+
 
 			_route = route;
 			_param = param;
 			_method = method;
+			_isSecure = isSecure;
 
 			if( verbose===null ){
 				_verbose = defaultVerbose;
@@ -72,11 +71,10 @@ package jp.noughts.progression.commands{
 				_requestStartedAt = d.getTime();
 			}
 
-			var isSecure:Boolean = false;
-			if( getRunsOnGAEServer() ){
-				isSecure = true;
+			if( getRunsOnGAEServer()==false ){
+				_isSecure = false;
 			}
-			cocoafish.sendRequest( _route, _method, _param, _requestComplete, isSecure );
+			cocoafish.sendRequest( _route, _method, _param, _requestComplete, _isSecure );
 			NativeUtils.setNetworkActivityIndicatorVisible( true );
 		}
 		
