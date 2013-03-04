@@ -12,8 +12,7 @@
 	use namespace sql_db;
 
 
-	public class TableCreator
-	{
+	public class TableCreator{
 		private static var tablesUpdated:Object = {};
 
 
@@ -21,8 +20,7 @@
 		 * Creates a new table for this object if one does not already exist. In addition, will
 		 * add new fields to existing tables if an object has changed
 		 */
-		public static function updateTable(obj:ActiveRecord, schema:SQLTableSchema = null):void
-		{
+		public static function updateTable(obj:ActiveRecord, schema:SQLTableSchema = null):void{
 			var tableName:String = ActiveRecord.schemaTranslation.getTable(obj.className);
 			var primaryKey:String = ActiveRecord.schemaTranslation.getPrimaryKey(obj.className);
 

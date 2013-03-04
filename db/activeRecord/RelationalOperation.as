@@ -122,28 +122,25 @@ package jp.noughts.db.activeRecord
 			}
 		}
 		
-		public function countRelated(conditions:String = null, conditionParams:Array = null):uint
-		{
-			switch (relationship)
-			{
-				case BELONGS_TO:
-					return thatObj.count(thatPrimaryKey + " = ?", [thisObj[thatForeignKey]]);
-				case HAS_ONE:
-					cond = mergeConditions(conditions, conditionParams, thisForeignKey + " = ?", [thisObj.id]);
-					return thatObj.count(cond.conditions, cond.params);
-				case HAS_MANY:
-					cond = mergeConditions(conditions, conditionParams, thisForeignKey + " = ?", [thisObj.id]);
-					return thatObj.count(cond.conditions, cond.params);
-				case MANY_TO_MANY:
-					cond = mergeConditions(conditions, conditionParams, joinTable + "." + thisForeignKey + " = ?", [thisObj.id]);
-					return thatObj.count(cond.conditions, cond.params, joins);
-				default:
-					return 0;
-			}
-		}
+		//public function countRelated(conditions:String = null, conditionParams:Array = null):uint{
+		//	switch (relationship){
+		//		case BELONGS_TO:
+		//			return thatObj.count(thatPrimaryKey + " = ?", [thisObj[thatForeignKey]]);
+		//		case HAS_ONE:
+		//			cond = mergeConditions(conditions, conditionParams, thisForeignKey + " = ?", [thisObj.id]);
+		//			return thatObj.count(cond.conditions, cond.params);
+		//		case HAS_MANY:
+		//			cond = mergeConditions(conditions, conditionParams, thisForeignKey + " = ?", [thisObj.id]);
+		//			return thatObj.count(cond.conditions, cond.params);
+		//		case MANY_TO_MANY:
+		//			cond = mergeConditions(conditions, conditionParams, joinTable + "." + thisForeignKey + " = ?", [thisObj.id]);
+		//			return thatObj.count(cond.conditions, cond.params, joins);
+		//		default:
+		//			return 0;
+		//	}
+		//}
 		
-		public function saveRelated(property:Object = null):Boolean
-		{
+		public function saveRelated(property:Object = null):Boolean{
 			if (!property) return false;
 			
 			if (property is ActiveRecord)
@@ -156,13 +153,10 @@ package jp.noughts.db.activeRecord
 			if (relationship != BELONGS_TO && !thisObj.id)
 				thisObj.save();
 			
-			try
-			{
-				switch (relationship)
-				{
+			try{
+				switch (relationship){
 					case BELONGS_TO:
-						if (property is ActiveRecord)
-						{
+						if (property is ActiveRecord){
 							thatObj.save();
 							thisObj[thatForeignKey] = thatObj.id;
 							result = thisObj.save();
@@ -173,8 +167,7 @@ package jp.noughts.db.activeRecord
 						result = thatObj.save();
 						break;
 					case HAS_MANY:
-						for each (obj in property)
-						{
+						for each (obj in property){
 							obj[thisForeignKey] = thisObj.id;
 							obj.save();
 						}
@@ -185,8 +178,7 @@ package jp.noughts.db.activeRecord
 						insStmt.text = "INSERT OR REPLACE INTO " + joinTable + " (" + thisForeignKey + ", " + thatForeignKey + ") VALUES (?, ?)";
 						insStmt.parameters[1] = thisObj.id;
 						
-						for each (obj in property)
-						{
+						for each (obj in property){
 							obj.save();
 							insStmt.parameters[2] = obj.id;
 							insStmt.execute();
@@ -198,45 +190,43 @@ package jp.noughts.db.activeRecord
 				}
 				
 				thisObj.connection.commit();
-			}
-			catch(e:Error)
-			{
+			}catch(e:Error){
 				thisObj.connection.rollback();
 			}
 			
 			return result;
 		}
 		
-		public function deleteRelated(conditions:String = null, conditionParams:Array = null, joinOnly:Boolean = true):uint
-		{
-			switch (relationship)
-			{
-				case BELONGS_TO:
-					return thatObj.deleteAll(thatPrimaryKey + " = ?", [thisObj[thatForeignKey]]);
-				case HAS_ONE:
-					cond = mergeConditions(conditions, conditionParams, thisForeignKey + " = ?", [thisObj.id]);
-					return thatObj.deleteAll(cond.conditions, cond.params);
-				case HAS_MANY:
-					cond = mergeConditions(conditions, conditionParams, thisForeignKey + " = ?", [thisObj.id]);
-					return thatObj.deleteAll(cond.conditions, cond.params);
-				case MANY_TO_MANY:
-					cond = mergeConditions(conditions, conditionParams, joinTable + "." + thisForeignKey + " = ?", [thisObj.id]);
+		//public function deleteRelated(conditions:String = null, conditionParams:Array = null, joinOnly:Boolean = true):uint
+		//{
+		//	switch (relationship)
+		//	{
+		//		case BELONGS_TO:
+		//			return thatObj.deleteAll(thatPrimaryKey + " = ?", [thisObj[thatForeignKey]]);
+		//		case HAS_ONE:
+		//			cond = mergeConditions(conditions, conditionParams, thisForeignKey + " = ?", [thisObj.id]);
+		//			return thatObj.deleteAll(cond.conditions, cond.params);
+		//		case HAS_MANY:
+		//			cond = mergeConditions(conditions, conditionParams, thisForeignKey + " = ?", [thisObj.id]);
+		//			return thatObj.deleteAll(cond.conditions, cond.params);
+		//		case MANY_TO_MANY:
+		//			cond = mergeConditions(conditions, conditionParams, joinTable + "." + thisForeignKey + " = ?", [thisObj.id]);
 					
-					var all:Array = thatObj.findAll(cond.conditions, cond.params, joins);
-					for (var i:int = 0; i < all.length; i++)
-						all[i] = all[i].id;
+		//			var all:Array = thatObj.findAll(cond.conditions, cond.params, joins);
+		//			for (var i:int = 0; i < all.length; i++)
+		//				all[i] = all[i].id;
 					
-					var allIds:String = "(" + all.join(",") + ")";
-					thisObj.query("DELETE FROM " + joinTable + " WHERE " + thatForeignKey + " IN " + allIds);
+		//			var allIds:String = "(" + all.join(",") + ")";
+		//			thisObj.query("DELETE FROM " + joinTable + " WHERE " + thatForeignKey + " IN " + allIds);
 					
-					if (!joinOnly)
-						thisObj.query("DELETE FROM " + thatTable + " WHERE " + thatPrimaryKey + " IN " + allIds);
+		//			if (!joinOnly)
+		//				thisObj.query("DELETE FROM " + thatTable + " WHERE " + thatPrimaryKey + " IN " + allIds);
 					
-					return all.length;
-				default:
-					return 0;
-			}
-		}
+		//			return all.length;
+		//		default:
+		//			return 0;
+		//	}
+		//}
 		
 		
 		sql_db function mergeConditions(conditions1:String, conditions1Params:Array, conditions2:String, conditions2Params:Array):Object

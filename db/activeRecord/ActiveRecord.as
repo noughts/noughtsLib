@@ -15,14 +15,18 @@
 	import jp.noughts.db.utils.Reflection;
 	import org.osflash.signals.*;import org.osflash.signals.natives.*;import org.osflash.signals.natives.sets.*;import org.osflash.signals.natives.base.*;
 
+	import jp.noughts.db.commands.*;
+
 	use namespace sql_db;
 	use namespace flash_proxy;
 
-	public class ActiveRecord extends Proxy implements IEventDispatcher
-	{
+	public class ActiveRecord extends Proxy implements IEventDispatcher	{
 		sql_db static var tableSchemaCache:Object = {};
 		sql_db static var columnSchemaCache:Object = {};
 
+		public var queryComplete_sig:Signal = new Signal( Object )
+		public var saveComplete_sig:Signal = new Signal( Boolean )
+		public var countComplete_sig:Signal = new Signal( uint )
 		//public var saveAllComplete_sig:Signal = new Signal()
 
 		/**
@@ -57,11 +61,10 @@
 		public var id:uint;
 
 
-		public function ActiveRecord()
-		{
+		public function ActiveRecord(){
 			constructor = getDefinitionByName(getQualifiedClassName(this));
 			eventDispatcher = new EventDispatcher(this);
-			connection = DB.getConnection(defaultConnectionAlias, true);
+			connection = DB.getConnection( defaultConnectionAlias );
 		}
 
 
@@ -72,7 +75,10 @@
 			var tableName:String = schemaTranslation.getTable(className);
 			var indexName:String = "idx_"+ tableName +"_"+ columnNames_array.join("_");
 			var columnNames_str:String = columnNames_array.join(",")
-			query( "CREATE INDEX IF NOT EXISTS "+ indexName +" ON "+ tableName +" ("+ columnNames_str +")" )
+			//query( "CREATE INDEX IF NOT EXISTS "+ indexName +" ON "+ tableName +" ("+ columnNames_str +")" )
+
+			var sql:String = "CREATE INDEX IF NOT EXISTS "+ indexName +" ON "+ tableName +" ("+ columnNames_str +")"
+			new QueryAsyncCommand( connection, sql )
 		}
 
 		/**
@@ -81,18 +87,30 @@
 		 * @param The database id or primary key value
 		 * @return Whether the object was successfully loaded
 		 */
-		public function load(id:uint):Boolean
-		{
+		public function load(id:uint):void{
 			var tableName:String = schemaTranslation.getTable(className);
 			var primaryKey:String = schemaTranslation.getPrimaryKey(className);
 			var stmt:SQLStatement = new SQLStatement();
-			var result:Array = query("SELECT * FROM " + tableName + " WHERE " + primaryKey + " = ?", id) as Array;
 
-			if (!result.length)
-				return false;
+			var sql:String = "SELECT * FROM " + tableName + " WHERE " + primaryKey + " = ?"
 
-			setDBProperties(result[0]);
-			return true;
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+				new QueryAsyncCommand( connection, sql, id ),
+				function(){
+					var result:Array = this.latestData;
+					setDBProperties(result[0]);
+				},
+			null);
+			slist.execute();
+			
+
+			//var result:Array = query( sql, id ) as Array;
+			//if (!result.length)
+			//	return false;
+
+			//setDBProperties(result[0]);
+			//return true;
 		}
 
 		/**
@@ -102,16 +120,22 @@
 		 * @param The parameter replacements to replace the ?s
 		 * @return Whether the object was succesfully loaded
 		 */
-		public function loadBy(conditions:String, ...parameters:Array):Boolean
-		{
+		public function loadBy(conditions:String, ...parameters:Array):void{
 			var tableName:String = schemaTranslation.getTable(className);
-			var result:Array = query("SELECT * FROM " + tableName + " WHERE " + conditions, parameters) as Array;
+			var sql:String = "SELECT * FROM " + tableName + " WHERE " + conditions;
 
-			if (!result.length)
-				return false;
-
-			setDBProperties(result[0]);
-			return true;
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+				new QueryAsyncCommand( connection, sql, parameters ),
+				function(){
+					var result:Array = this.latestData as Array;
+					if( !result.length ){
+						return;
+					}
+					setDBProperties(result[0]);
+				},
+			null);
+			slist.execute();
 		}
 
 
@@ -122,12 +146,12 @@
 			slist.addCommand(
 				new Listen( conn, SQLEvent.OPEN ),
 				function(){
-					//Logger.info( "SQLConnection OPENED" )
+					Logger.info( "SQLConnection OPENED" )
 					conn.begin()
 				},
 				new Listen( conn, SQLEvent.BEGIN ),
 				function(){
-					//Logger.info( "SQLConnection transaction began" )
+					Logger.info( "SQLConnection transaction began" )
 
 				},
 			null);
@@ -149,7 +173,7 @@
 				slist.addCommand(
 					new Var( "i", i ),
 					function(){
-						//Logger.info( "statement execute" )
+						Logger.info( "statement execute" )
 						var i:uint = this.getVar( "i" )
 						var stmt:SQLStatement = new SQLStatement()
 						stmt.sqlConnection = conn;
@@ -174,10 +198,13 @@
 			}
 
 			slist.addCommand(
+				function(){
+					Logger.info( "SQLConnection commit start..." )
+				},
 				conn.commit,
 				new Listen( conn, SQLEvent.COMMIT ),
 				function(){
-					//Logger.info( "SQLConnection commit complete!!!" )
+					Logger.info( "SQLConnection commit complete!!!" )
 					self.dispatchEvent( new Event(Event.COMPLETE) );
 				},
 			null);
@@ -197,14 +224,13 @@
 		 *
 		 * @return Whether the object successfully saved
 		 */
-		public function save():Boolean
-		{
+		public function save():void{
 			// dispatch the saving event and allow for the save to be canceled
 			var savingEvent:ActiveRecordEvent = new ActiveRecordEvent(ActiveRecordEvent.SAVING, true);
 			dispatchEvent(savingEvent);
 
 			if (savingEvent.isDefaultPrevented())
-				return false;
+				return;
 
 			// add timestamps if certain "created" and/or "modified" fields are defined
 			if (!id && hasOwnProperty(schemaTranslation.getCreatedField()))
@@ -222,38 +248,53 @@
 			var data:Object = getDBProperties();
 			delete data[primaryKey];
 			var fields:Array = [];
-			for (var fieldName:String in data)
-			{
+			for (var fieldName:String in data){
 				fields.push(fieldName);
 				parameters.push(data[fieldName]);
 			}
 
-			if (id) // this is an update statement
-			{
+			if (id) {
+				// this is an update statement
 				sql = "UPDATE " + tableName + " SET " + fields.join(" = ?, ") + " = ? WHERE " + primaryKey + " = ?";
 				parameters.push(id);
-			}
-			else
-			{
+			} else {
 				sql = "INSERT INTO " + tableName + " (" + fields.join(", ") + ") VALUES (?";
 				for (var j:uint = 0; j < fields.length - 1; j++)
 					sql += ", ?";
 				sql += ")";
 			}
 
-			var result:Object = query(sql, parameters);
 
-			if (!result)
-				return false;
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+				new QueryAsyncCommand( connection, sql, parameters ),
+				function(){
+					var result:Object = this.latestData;
+					if( !result ){
+						saveComplete_sig.dispatch( false )
+						return;
+					}
+					if( !id ){
+						id = connection.lastInsertRowID;
+					}
+					saveComplete_sig.dispatch( true )
+				},
+			null);
+			slist.execute();
+			
+			//var result:Object = query( sql, parameters );
 
-			if (!id)
-				id = connection.lastInsertRowID;
+			//if (!result)
+			//	return false;
 
-			// dispatch the save event
-			var saveEvent:ActiveRecordEvent = new ActiveRecordEvent(ActiveRecordEvent.SAVE);
-			dispatchEvent(saveEvent);
+			//if (!id)
+			//	id = connection.lastInsertRowID;
 
-			return true;
+			//// dispatch the save event
+			//var saveEvent:ActiveRecordEvent = new ActiveRecordEvent(ActiveRecordEvent.SAVE);
+			//dispatchEvent(saveEvent);
+
+			//return true;
 		}
 
 		//////////// These are ideally static methods that would work with a subclass, however, since we
@@ -329,8 +370,7 @@
 		 * Updates an object already stored in the database with the properties passed
 		 * @return Whether it was successfully updated
 		 */
-		public function update(id:uint, updates:String, updateParams:Array = null):Boolean
-		{
+		public function update(id:uint, updates:String, updateParams:Array = null):void{
 			var tableName:String = schemaTranslation.getTable(className);
 			var primaryKey:String = schemaTranslation.getPrimaryKey(className);
 
@@ -339,15 +379,16 @@
 			else
 				updateParams.push(id);
 
-			return query("UPDATE " + tableName + " SET " + updates + " WHERE " + primaryKey + " = ?", updateParams) as uint > 0;
+			var sql:String = "UPDATE " + tableName + " SET " + updates + " WHERE " + primaryKey + " = ?"
+
+			new QueryAsyncCommand( connection, sql, updateParams ).execute();
 		}
 
 		/**
 		 * Updates all records' properties matching conditions
 		 * @return Number of successful updates
 		 */
-		public function updateAll(conditions:String = null, conditionParams:Array = null, updates:String = null, updateParams:Array = null):uint
-		{
+		public function updateAll(conditions:String = null, conditionParams:Array = null, updates:String = null, updateParams:Array = null):void{
 			var tableName:String = schemaTranslation.getTable(className);
 
 			var params:Array = conditionParams ?
@@ -356,7 +397,8 @@
 					)
 				: updateParams;
 
-			return query("UPDATE " + tableName + " SET " + updates, params) as uint;
+			var sql:String = "UPDATE " + tableName + " SET " + updates
+			new QueryAsyncCommand( connection, sql, params ).execute();
 		}
 
 		/**
@@ -365,11 +407,10 @@
 		 * @param The id of the object in the database
 		 * @return Whether object was deleted
 		 */
-		public function deleteById(id:uint):Boolean
-		{
+		public function deleteById(id:uint):void{
 			var tableName:String = schemaTranslation.getTable(className);
 			var primaryKey:String = schemaTranslation.getPrimaryKey(className);
-			return query("DELETE FROM " + tableName + " WHERE " + primaryKey + " = ?", id) > 0;
+			new QueryAsyncCommand( connection, "DELETE FROM " + tableName + " WHERE " + primaryKey + " = ?", id ).execute();
 		}
 
 		/**
@@ -377,33 +418,46 @@
 		 *
 		 * @return Number of successful deletes
 		 */
-		public function deleteAll(conditions:String = null, conditionParams:Array = null):uint{
+		public function deleteAll(conditions:String = null, conditionParams:Array = null):void{
 			var tableName:String = schemaTranslation.getTable(className);
 
 			var sql:String = "DELETE FROM " + tableName;
 			sql += assembleQuery(conditions);
-			return query(sql, conditionParams) as uint;
+			new QueryAsyncCommand( connection, sql, conditionParams ).execute();
 		}
 
 		/**
 		 * Returns the number of records that meet the conditions
 		 */
-		public function count(conditions:String = null, conditionParams:Array = null, joins:String = null):uint
-		{
+		public function count(conditions:String = null, conditionParams:Array = null, joins:String = null):void{
 			var tableName:String = schemaTranslation.getTable(className);
 			var sql:String = "SELECT COUNT(*) FROM " + tableName;
 			sql += assembleQuery(conditions, null, 0, 0, joins);
-			var result:Array = query(sql, conditionParams) as Array;
-			return result ? result[0][0] : 0;
+
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+				new QueryAsyncCommand( connection, sql, conditionParams ),
+				function(){
+					var result:Array = this.latestData as Array;
+					countComplete_sig.dispatch( result ? result[0][0] : 0 );
+				},
+			null);
+			slist.execute();
 		}
 
 		/**
 		 * Returns the number of records returned by the sql statement
 		 */
-		public function countBySql(sql:String, params:Array = null):uint
-		{
-			var result:Array = query(sql, params) as Array;
-			return result ? result[0][0] : 0;
+		public function countBySql( sql:String, params:Array = null ):void{
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+				new QueryAsyncCommand( connection, sql, params ),
+				function(){
+					var result:Array = this.latestData as Array;
+					countComplete_sig.dispatch( result ? result[0][0] : 0 );
+				},
+			null);
+			slist.execute();
 		}
 
 		/**
@@ -483,45 +537,41 @@
 		}
 
 
-		sql_db function loadRelated(clazz:Class, multiple:Boolean = false, conditions:String = null, conditionParams:Array = null, order:String = null, limit:uint = 0, offset:uint = 0):Object
-		{
+		sql_db function loadRelated(clazz:Class, multiple:Boolean = false, conditions:String = null, conditionParams:Array = null, order:String = null, limit:uint = 0, offset:uint = 0):Object{
 			var r:RelationalOperation = new RelationalOperation(this, clazz, multiple);
 			return r.loadRelated(conditions, conditionParams, order, limit, offset);
 		}
 
-		sql_db function countRelated(clazz:Class, multiple:Boolean = false, conditions:String = null, conditionParams:Array = null):uint
-		{
-			var r:RelationalOperation = new RelationalOperation(this, clazz, multiple);
-			return r.countRelated(conditions, conditionParams);
-		}
+		//sql_db function countRelated(clazz:Class, multiple:Boolean = false, conditions:String = null, conditionParams:Array = null):uint{
+		//	var r:RelationalOperation = new RelationalOperation(this, clazz, multiple);
+		//	return r.countRelated(conditions, conditionParams);
+		//}
 
-		sql_db function saveRelated(clazz:Class, multiple:Boolean = false, property:Object = null):Boolean
-		{
+		sql_db function saveRelated(clazz:Class, multiple:Boolean = false, property:Object = null):Boolean{
 			var r:RelationalOperation = new RelationalOperation(this, clazz, multiple);
 			return r.saveRelated(property);
 		}
 
-		sql_db function deleteRelated(clazz:Class, multiple:Boolean = false, conditions:String = null, conditionParams:Array = null, joinOnly:Boolean = true):uint
-		{
-			var r:RelationalOperation = new RelationalOperation(this, clazz, multiple);
-			return r.deleteRelated(conditions, conditionParams, joinOnly);
-		}
+		//sql_db function deleteRelated(clazz:Class, multiple:Boolean = false, conditions:String = null, conditionParams:Array = null, joinOnly:Boolean = true):uint{
+		//	var r:RelationalOperation = new RelationalOperation(this, clazz, multiple);
+		//	return r.deleteRelated(conditions, conditionParams, joinOnly);
+		//}
 
 
 		/**
 		 * Gives the class name for this object without the package info
 		 */
-		sql_db function get className():String
-		{
-			if (!_className)
-			{
+		sql_db function get className():String{
+			if (!_className){
 				var classParts:Array = getQualifiedClassName(this).split("::");
 				_className = (classParts.length == 1 ? classParts[0] : classParts[1]);
 			}
 			return _className;
 		}
 
-		public function query(sql:String, ...params:Array):Object{
+
+
+		public function query(sql:String, ...params:Array):void{
 			var stmt:SQLStatement = new SQLStatement();
 
 			stmt.sqlConnection = connection;
@@ -542,11 +592,20 @@
 			}
 			//trace( "params", ObjectUtil.toString(params) )
 			//trace( "stmt", ObjectUtil.toString(stmt.parameters) )
-			stmt.execute();
-			var result:SQLResult = stmt.getResult();
 
-			return sql.toUpperCase().indexOf("SELECT ") == 0 ? result.data || [] : result.rowsAffected;
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+				new ExecuteStatement( stmt ),
+				function(){
+					var result:SQLResult = this.latestData;
+					var out:Object = sql.toUpperCase().indexOf("SELECT ") == 0 ? result.data || [] : result.rowsAffected;
+					queryComplete_sig( out )
+				},
+			null);
+			slist.execute();
 		}
+
+
 
 		private var sqlConnectionOpened_sig:NativeSignal
 		public function asyncQuery( clazz:Class, sql:String, resultFunction:Function, ...params:Array ):void{
@@ -674,7 +733,7 @@
 			if (tableName in tableSchemaCache)
 				return tableSchemaCache[tableName];
 
-			var schema:SQLSchemaResult = DB.getSchema(connection);
+			var schema:SQLSchemaResult = DB.getSchema( connection );
 
 			var table:SQLTableSchema;
 
@@ -704,6 +763,49 @@
 			tableSchemaCache[tableName] = table;
 			return table;
 		}
+
+		sql_db function getSchemaCommand(tableName:String = null, updateTable:Boolean = false):SerialList{
+			if (!tableName)
+				tableName = schemaTranslation.getTable(className);
+
+			if (tableName in tableSchemaCache)
+				return tableSchemaCache[tableName];
+
+			var schema:SQLSchemaResult = DB.getSchema( connection );
+
+			var table:SQLTableSchema;
+
+			// first, find the table this object represents
+			trace( "schema.tables", schema.tables )
+			if( schema ){
+				for each( var tmpTable:SQLTableSchema in schema.tables ){
+					if (tmpTable.name == tableName){
+						table = tmpTable;
+						break;
+					}
+				}
+			}
+
+			if (updateTable)
+				TableCreator.updateTable(this, table);
+
+			var fields:Object;
+
+			if (table && table.columns.length){
+				fields = {};
+				for each (var column:SQLColumnSchema in table.columns)
+					fields[column.name] = column;
+			}
+
+			columnSchemaCache[tableName] = fields;
+			tableSchemaCache[tableName] = table;
+			return table;
+		}
+
+
+
+
+
 
 		sql_db function getFields(tableName:String = null):Object
 		{
