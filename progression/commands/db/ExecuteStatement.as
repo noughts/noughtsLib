@@ -16,7 +16,7 @@ package jp.noughts.progression.commands.db{
 
 	public class ExecuteStatement extends Command {
 		
-		private var _stmt:SQLStatement;
+		private var _statement:SQLStatement;
 
 				
 		public function ExecuteStatement( statement:SQLStatement, prefetch:int=-1, responder:Responder=null ){
@@ -31,15 +31,17 @@ package jp.noughts.progression.commands.db{
 		 * 実行されるコマンドの実装です。
 		 */
 		private function _executeFunction():void {
+			Logger.info( "ExecuteStatement 開始..." )
 			_statement.addEventListener( SQLEvent.RESULT, resultHandler );
 			_statement.execute();
 		}
 		
 
 		private function resultHandler( event:SQLEvent ):void{
+			Logger.info( "ExecuteStatement 終了" )
 		    var result:SQLResult = _statement.getResult();
 		    if( result != null ){
-		    	super.data = result;
+				latestData = result;
 		    }
 		    _destroy();
 		    super.executeComplete();// 処理を終了する

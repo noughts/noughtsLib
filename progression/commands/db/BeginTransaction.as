@@ -1,4 +1,4 @@
-package jp.noughts.db.commands{
+package jp.noughts.progression.commands.db{
 	import flash.errors.*;
 	import flash.net.*;
 	import flash.events.*;
@@ -14,18 +14,17 @@ package jp.noughts.db.commands{
 
 
 
-	public class QueryAsyncCommand extends Command {
+	public class BeginTransaction extends Command {
 		
 		private var _connection:SQLConnection;
-		private var _sql:String
-		private var _params:Array;
-		private var _stmt:SQLStatement;
+		private var _option:String
+		private var _responder:Responder;
 
 				
-		public function QueryAsyncCommand( connection:SQLConnection, sql:String, ...params:Array ){
+		public function BeginTransaction( connection:SQLConnection, option:String = null, responder:Responder = null ){
 			_connection = connection;
-			_sql = sql;
-			_params = params;
+			_option = option;
+			_responder = responder;
 
 			// 親クラスを初期化する
 			super( _executeFunction, _interruptFunction, null );
@@ -36,35 +35,14 @@ package jp.noughts.db.commands{
 		 * 実行されるコマンドの実装です。
 		 */
 		private function _executeFunction():void {
-			_stmt = new SQLStatement();
-
-			_stmt.sqlConnection = _connection;
-			_stmt.text = _sql;
-
-			var paramsFound:Boolean = false
-			if( _params.length == 1 && _params[0]!=null ){
-				if( _params[0] is Array ){	
-					_params = _params[0];
-				}
-				paramsFound = true;
-			}
-
-			if( paramsFound ){
-				for (var i:int = 0; i < _params.length; i++){
-					_stmt.parameters[i] = _params[i];
-				}
-			}
-			//trace( "_params", ObjectUtil.toString(_params) )
-			//trace( "_stmt", ObjectUtil.toString(_stmt.parameters) )
-
-			_stmt.addEventListener( SQLEvent.RESULT, _onSQLComplete );
-			_stmt.execute();
+			Logger.info( "BeginTransaction 開始..." )
+			_connection.addEventListener( SQLEvent.BEGIN, _onTransactionBegin );
+			_connection.begin( _option  );
 		}
 		
 
-		private function _onSQLComplete( e:SQLEvent ):void{
-			var result:SQLResult = _stmt.getResult();
-			super.latestData = _sql.toUpperCase().indexOf("SELECT ") == 0 ? result.data || [] : result.rowsAffected;
+		private function _onTransactionBegin( e:SQLEvent ):void{
+			Logger.info( "BeginTransaction 終了" )
 			_destroy();
 			super.executeComplete();// 処理を終了する
 		}
@@ -83,7 +61,7 @@ package jp.noughts.db.commands{
 		 * 破棄します。
 		 */
 		private function _destroy():void {
-			_stmt.removeEventListener( SQLEvent.RESULT, _onSQLComplete );
+			_connection.removeEventListener( SQLEvent.BEGIN, _onTransactionBegin );
 		}
 		
 		/**
