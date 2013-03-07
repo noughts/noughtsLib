@@ -14,16 +14,15 @@ package jp.noughts.progression.commands.db{
 
 
 
-	public class LoadSchema extends Command {
+	public class OpenConnection extends Command {
 		
 		private var _connection:SQLConnection;
-		private var _sql:String
-		private var _params:Array;
-		private var _stmt:SQLStatement;
+		private var _reference:Object;
 
 				
-		public function LoadSchema( connection:SQLConnection, type:Class=null, name:String=null, database:String="main", includeColumnSchema:Boolean=true, responder:Responder=null ){
+		public function OpenConnection( connection:SQLConnection, reference:Object=null, openMode:String = "create", responder:Responder = null, autoCompact:Boolean = false, pageSize:int = 1024, encryptionKey:ByteArray = null ){
 			_connection = connection;
+			_reference = reference
 
 			// 親クラスを初期化する
 			super( _executeFunction, _interruptFunction, null );
@@ -34,24 +33,19 @@ package jp.noughts.progression.commands.db{
 		 * 実行されるコマンドの実装です。
 		 */
 		private function _executeFunction():void {
-			Logger.info( "LoadSchema 開始..." )
-			_connection.addEventListener( SQLEvent.SCHEMA, _onSchema );
-			_connection.addEventListener( SQLErrorEvent.ERROR, _onError );
-			_connection.loadSchema();
+			Logger.info( "OpenConnection 開始..." )
+			_connection.addEventListener( SQLEvent.OPEN, _onOpenConnection );
+			_connection.openAsync( _reference );
 		}
 		
 
-		private function _onSchema( e:SQLEvent ):void{
-			Logger.info( "LoadSchema 終了" )
-			_destroy();
-			super.executeComplete();// 処理を終了する
+		private function _onOpenConnection( event:SQLEvent ):void{
+			Logger.info( "OpenConnection 完了" )
+		    _destroy();
+		    super.executeComplete();// 処理を終了する
+
 		}
 
-		private function _onError( e:SQLErrorEvent ):void{
-			Logger.info( "LoadSchema エラー", e )
-			_destroy();
-			super.executeComplete();// 処理を終了する
-		}
 
 
 		
@@ -67,8 +61,7 @@ package jp.noughts.progression.commands.db{
 		 * 破棄します。
 		 */
 		private function _destroy():void {
-			_connection.removeEventListener( SQLEvent.SCHEMA, _onSchema );
-			_connection.removeEventListener( SQLErrorEvent.ERROR, _onError );
+			_connection.removeEventListener( SQLEvent.RESULT, _onOpenConnection );
 		}
 		
 		/**

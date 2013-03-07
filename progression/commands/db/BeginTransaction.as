@@ -14,16 +14,17 @@ package jp.noughts.progression.commands.db{
 
 
 
-	public class LoadSchema extends Command {
+	public class BeginTransaction extends Command {
 		
 		private var _connection:SQLConnection;
-		private var _sql:String
-		private var _params:Array;
-		private var _stmt:SQLStatement;
+		private var _option:String
+		private var _responder:Responder;
 
 				
-		public function LoadSchema( connection:SQLConnection, type:Class=null, name:String=null, database:String="main", includeColumnSchema:Boolean=true, responder:Responder=null ){
+		public function BeginTransaction( connection:SQLConnection, option:String = null, responder:Responder = null ){
 			_connection = connection;
+			_option = option;
+			_responder = responder;
 
 			// 親クラスを初期化する
 			super( _executeFunction, _interruptFunction, null );
@@ -34,21 +35,14 @@ package jp.noughts.progression.commands.db{
 		 * 実行されるコマンドの実装です。
 		 */
 		private function _executeFunction():void {
-			Logger.info( "LoadSchema 開始..." )
-			_connection.addEventListener( SQLEvent.SCHEMA, _onSchema );
-			_connection.addEventListener( SQLErrorEvent.ERROR, _onError );
-			_connection.loadSchema();
+			Logger.info( "BeginTransaction 開始..." )
+			_connection.addEventListener( SQLEvent.BEGIN, _onTransactionBegin );
+			_connection.begin( _option  );
 		}
 		
 
-		private function _onSchema( e:SQLEvent ):void{
-			Logger.info( "LoadSchema 終了" )
-			_destroy();
-			super.executeComplete();// 処理を終了する
-		}
-
-		private function _onError( e:SQLErrorEvent ):void{
-			Logger.info( "LoadSchema エラー", e )
+		private function _onTransactionBegin( e:SQLEvent ):void{
+			Logger.info( "BeginTransaction 終了" )
 			_destroy();
 			super.executeComplete();// 処理を終了する
 		}
@@ -67,8 +61,7 @@ package jp.noughts.progression.commands.db{
 		 * 破棄します。
 		 */
 		private function _destroy():void {
-			_connection.removeEventListener( SQLEvent.SCHEMA, _onSchema );
-			_connection.removeEventListener( SQLErrorEvent.ERROR, _onError );
+			_connection.removeEventListener( SQLEvent.BEGIN, _onTransactionBegin );
 		}
 		
 		/**

@@ -14,15 +14,12 @@ package jp.noughts.progression.commands.db{
 
 
 
-	public class LoadSchema extends Command {
+	public class CommitTransaction extends Command {
 		
 		private var _connection:SQLConnection;
-		private var _sql:String
-		private var _params:Array;
-		private var _stmt:SQLStatement;
 
 				
-		public function LoadSchema( connection:SQLConnection, type:Class=null, name:String=null, database:String="main", includeColumnSchema:Boolean=true, responder:Responder=null ){
+		public function CommitTransaction( connection:SQLConnection ){
 			_connection = connection;
 
 			// 親クラスを初期化する
@@ -34,21 +31,14 @@ package jp.noughts.progression.commands.db{
 		 * 実行されるコマンドの実装です。
 		 */
 		private function _executeFunction():void {
-			Logger.info( "LoadSchema 開始..." )
-			_connection.addEventListener( SQLEvent.SCHEMA, _onSchema );
-			_connection.addEventListener( SQLErrorEvent.ERROR, _onError );
-			_connection.loadSchema();
+			Logger.info( "CommitTransaction 開始..." )
+			_connection.addEventListener( SQLEvent.COMMIT, _onCommitComplete );
+			_connection.commit();
 		}
 		
 
-		private function _onSchema( e:SQLEvent ):void{
-			Logger.info( "LoadSchema 終了" )
-			_destroy();
-			super.executeComplete();// 処理を終了する
-		}
-
-		private function _onError( e:SQLErrorEvent ):void{
-			Logger.info( "LoadSchema エラー", e )
+		private function _onCommitComplete( e:SQLEvent ):void{
+			Logger.info( "CommitTransaction 終了" )
 			_destroy();
 			super.executeComplete();// 処理を終了する
 		}
@@ -67,8 +57,7 @@ package jp.noughts.progression.commands.db{
 		 * 破棄します。
 		 */
 		private function _destroy():void {
-			_connection.removeEventListener( SQLEvent.SCHEMA, _onSchema );
-			_connection.removeEventListener( SQLErrorEvent.ERROR, _onError );
+			_connection.removeEventListener( SQLEvent.COMMIT, _onCommitComplete );
 		}
 		
 		/**

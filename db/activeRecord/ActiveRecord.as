@@ -15,7 +15,7 @@
 	import jp.noughts.db.utils.Reflection;
 	import org.osflash.signals.*;import org.osflash.signals.natives.*;import org.osflash.signals.natives.sets.*;import org.osflash.signals.natives.base.*;
 
-	import jp.noughts.db.commands.*;
+	import jp.noughts.progression.commands.db.*;
 
 	use namespace sql_db;
 	use namespace flash_proxy;
@@ -52,6 +52,11 @@
 		/**
 		 * This object's SQLConnection object, retrieved upon instantiation
 		 */
+		static public function hoge(){
+		}
+
+
+		static public var defaultConnection:SQLConnection;
 		public var connection:SQLConnection;
 
 		private var _className:String;
@@ -64,7 +69,11 @@
 		public function ActiveRecord(){
 			constructor = getDefinitionByName(getQualifiedClassName(this));
 			eventDispatcher = new EventDispatcher(this);
-			connection = DB.getConnection( defaultConnectionAlias );
+			if( defaultConnection ){
+				connection = defaultConnection
+			} else {
+				connection = DB.getConnection( defaultConnectionAlias );
+			}
 		}
 
 
@@ -78,7 +87,7 @@
 			//query( "CREATE INDEX IF NOT EXISTS "+ indexName +" ON "+ tableName +" ("+ columnNames_str +")" )
 
 			var sql:String = "CREATE INDEX IF NOT EXISTS "+ indexName +" ON "+ tableName +" ("+ columnNames_str +")"
-			new QueryAsyncCommand( connection, sql )
+			queryCommand( sql ).execute();
 		}
 
 		/**
@@ -96,7 +105,7 @@
 
 			var slist:SerialList = new SerialList();
 			slist.addCommand(
-				new QueryAsyncCommand( connection, sql, id ),
+				queryCommand( sql, id ),
 				function(){
 					var result:Array = this.latestData;
 					setDBProperties(result[0]);
@@ -126,7 +135,7 @@
 
 			var slist:SerialList = new SerialList();
 			slist.addCommand(
-				new QueryAsyncCommand( connection, sql, parameters ),
+				queryCommand( sql, parameters ),
 				function(){
 					var result:Array = this.latestData as Array;
 					if( !result.length ){
@@ -267,7 +276,7 @@
 
 			var slist:SerialList = new SerialList();
 			slist.addCommand(
-				new QueryAsyncCommand( connection, sql, parameters ),
+				queryCommand( sql, parameters ),
 				function(){
 					var result:Object = this.latestData;
 					if( !result ){
@@ -381,7 +390,7 @@
 
 			var sql:String = "UPDATE " + tableName + " SET " + updates + " WHERE " + primaryKey + " = ?"
 
-			new QueryAsyncCommand( connection, sql, updateParams ).execute();
+			queryCommand( sql, updateParams ).execute();
 		}
 
 		/**
@@ -398,7 +407,7 @@
 				: updateParams;
 
 			var sql:String = "UPDATE " + tableName + " SET " + updates
-			new QueryAsyncCommand( connection, sql, params ).execute();
+			queryCommand( sql, params ).execute();
 		}
 
 		/**
@@ -410,7 +419,7 @@
 		public function deleteById(id:uint):void{
 			var tableName:String = schemaTranslation.getTable(className);
 			var primaryKey:String = schemaTranslation.getPrimaryKey(className);
-			new QueryAsyncCommand( connection, "DELETE FROM " + tableName + " WHERE " + primaryKey + " = ?", id ).execute();
+			queryCommand( "DELETE FROM " + tableName + " WHERE " + primaryKey + " = ?", id ).execute();
 		}
 
 		/**
@@ -423,7 +432,7 @@
 
 			var sql:String = "DELETE FROM " + tableName;
 			sql += assembleQuery(conditions);
-			new QueryAsyncCommand( connection, sql, conditionParams ).execute();
+			queryCommand( sql, conditionParams ).execute();
 		}
 
 		/**
@@ -436,7 +445,7 @@
 
 			var slist:SerialList = new SerialList();
 			slist.addCommand(
-				new QueryAsyncCommand( connection, sql, conditionParams ),
+				queryCommand( sql, conditionParams ),
 				function(){
 					var result:Array = this.latestData as Array;
 					countComplete_sig.dispatch( result ? result[0][0] : 0 );
@@ -451,7 +460,7 @@
 		public function countBySql( sql:String, params:Array = null ):void{
 			var slist:SerialList = new SerialList();
 			slist.addCommand(
-				new QueryAsyncCommand( connection, sql, params ),
+				queryCommand( sql, params ),
 				function(){
 					var result:Array = this.latestData as Array;
 					countComplete_sig.dispatch( result ? result[0][0] : 0 );
@@ -572,6 +581,10 @@
 
 
 		public function query(sql:String, ...params:Array):void{
+		}
+
+		// latestData の型は Object
+		public function queryCommand( sql:String, ...params:Array ):SerialList{
 			var stmt:SQLStatement = new SQLStatement();
 
 			stmt.sqlConnection = connection;
@@ -599,11 +612,12 @@
 				function(){
 					var result:SQLResult = this.latestData;
 					var out:Object = sql.toUpperCase().indexOf("SELECT ") == 0 ? result.data || [] : result.rowsAffected;
-					queryComplete_sig( out )
+					slist.latestData = out;
 				},
 			null);
-			slist.execute();
+			return slist;
 		}
+
 
 
 
@@ -704,102 +718,107 @@
 			}
 		}
 
-		sql_db function getDBProperties():Object
-		{
+		//sql_db function getDBProperties():Object{
+		//	var tableName:String = schemaTranslation.getTable(className);
+		//	var columns:Array = getSchema().columns;
+
+		//	var data:Object = {};
+
+		//	for each (var column:SQLColumnSchema in columns){
+		//		if (column.primaryKey){
+		//			data[column.name] = id;
+		//		} else if (column.name in this){
+		//			data[column.name] = this[column.name];
+		//		}
+		//	}
+		//	return data;
+		//}
+
+		// Objectを返す
+		sql_db function getDBPropertiesCommand():SerialList{
 			var tableName:String = schemaTranslation.getTable(className);
-			var columns:Array = getSchema().columns;
+			var columns:Array
 
-			var data:Object = {};
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+				getSchemaCommand(),
+				function(){
+					var schema:SQLTableSchema = this.latestData;
+					columns = schema.columns;
 
-			for each (var column:SQLColumnSchema in columns)
-			{
-				if (column.primaryKey)
-					data[column.name] = id;
-				else if (column.name in this)
-					data[column.name] = this[column.name];
-			}
-
-			return data;
+					var data:Object = {};
+					for each (var column:SQLColumnSchema in columns){
+						if (column.primaryKey){
+							data[column.name] = id;
+						} else if (column.name in this){
+							data[column.name] = this[column.name];
+						}
+					}
+					slist.latestData = data;
+				},
+			null);
+			return slist
 		}
+
 
 		/**
 		 * Creates a new table for this object if one does not already exist. In addition, will
 		 * add new fields to existing tables if an object has changed
 		 */
 		sql_db function getSchema(tableName:String = null, updateTable:Boolean = false):SQLTableSchema{
-			if (!tableName)
-				tableName = schemaTranslation.getTable(className);
-
-			if (tableName in tableSchemaCache)
-				return tableSchemaCache[tableName];
-
-			var schema:SQLSchemaResult = DB.getSchema( connection );
-
-			var table:SQLTableSchema;
-
-			// first, find the table this object represents
-			trace( "schema.tables", schema.tables )
-			if( schema ){
-				for each( var tmpTable:SQLTableSchema in schema.tables ){
-					if (tmpTable.name == tableName){
-						table = tmpTable;
-						break;
-					}
-				}
-			}
-
-			if (updateTable)
-				TableCreator.updateTable(this, table);
-
-			var fields:Object;
-
-			if (table && table.columns.length){
-				fields = {};
-				for each (var column:SQLColumnSchema in table.columns)
-					fields[column.name] = column;
-			}
-
-			columnSchemaCache[tableName] = fields;
-			tableSchemaCache[tableName] = table;
-			return table;
+			return null;
 		}
 
-		sql_db function getSchemaCommand(tableName:String = null, updateTable:Boolean = false):SerialList{
+
+		// SQLTableSchema を返す
+		sql_db function getSchemaCommand( tableName:String = null, updateTable:Boolean = false ):SerialList{
+			var self:ActiveRecord = this;
 			if (!tableName)
 				tableName = schemaTranslation.getTable(className);
 
 			if (tableName in tableSchemaCache)
 				return tableSchemaCache[tableName];
 
-			var schema:SQLSchemaResult = DB.getSchema( connection );
 
+			var schema:SQLSchemaResult
 			var table:SQLTableSchema;
 
-			// first, find the table this object represents
-			trace( "schema.tables", schema.tables )
-			if( schema ){
-				for each( var tmpTable:SQLTableSchema in schema.tables ){
-					if (tmpTable.name == tableName){
-						table = tmpTable;
-						break;
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+				DB.getSchemaCommand( connection ),
+				function(){
+					schema = this.latestData;
+
+					// first, find the table this object represents
+					trace( "schema.tables", schema.tables )
+					if( schema ){
+						for each( var tmpTable:SQLTableSchema in schema.tables ){
+							if (tmpTable.name == tableName){
+								table = tmpTable;
+								break;
+							}
+						}
 					}
-				}
-			}
 
-			if (updateTable)
-				TableCreator.updateTable(this, table);
+					if (updateTable){
+						slist.insertCommand( TableCreator.updateTableCommand( self, table ) )
+					}
+				},
+				function(){
+					var fields:Object;
+					if (table && table.columns.length){
+						fields = {};
+						for each (var column:SQLColumnSchema in table.columns){
+							fields[column.name] = column;
+						}
+					}
 
-			var fields:Object;
-
-			if (table && table.columns.length){
-				fields = {};
-				for each (var column:SQLColumnSchema in table.columns)
-					fields[column.name] = column;
-			}
-
-			columnSchemaCache[tableName] = fields;
-			tableSchemaCache[tableName] = table;
-			return table;
+					columnSchemaCache[tableName] = fields;
+					tableSchemaCache[tableName] = table;
+					slist.latestData = table;
+				},
+			null);
+			return slist;
 		}
 
 
