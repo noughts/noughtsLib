@@ -141,61 +141,63 @@ package jp.noughts.db.activeRecord
 		//}
 		
 		public function saveRelated(property:Object = null):Boolean{
-			if (!property) return false;
+			//if (!property) return false;
 			
-			if (property is ActiveRecord)
-				thatObj = property as ActiveRecord;
+			//if (property is ActiveRecord)
+			//	thatObj = property as ActiveRecord;
 			
-			var obj:ActiveRecord;
-			var result:Boolean;
-			thisObj.connection.begin();
+			//var obj:ActiveRecord;
+			//var result:Boolean;
+			//thisObj.connection.begin();
 			
-			if (relationship != BELONGS_TO && !thisObj.id)
-				thisObj.save();
+			//if (relationship != BELONGS_TO && !thisObj.id)
+			//	thisObj.save();
 			
-			try{
-				switch (relationship){
-					case BELONGS_TO:
-						if (property is ActiveRecord){
-							thatObj.save();
-							thisObj[thatForeignKey] = thatObj.id;
-							result = thisObj.save();
-						}
-						break;
-					case HAS_ONE:
-						thatObj[thisForeignKey] = thisObj.id;
-						result = thatObj.save();
-						break;
-					case HAS_MANY:
-						for each (obj in property){
-							obj[thisForeignKey] = thisObj.id;
-							obj.save();
-						}
-						result = true;
-						break;
-					case MANY_TO_MANY:
-						var insStmt:SQLStatement = new SQLStatement();
-						insStmt.text = "INSERT OR REPLACE INTO " + joinTable + " (" + thisForeignKey + ", " + thatForeignKey + ") VALUES (?, ?)";
-						insStmt.parameters[1] = thisObj.id;
+			//try{
+			//	switch (relationship){
+			//		case BELONGS_TO:
+			//			if (property is ActiveRecord){
+			//				thatObj.save();
+			//				thisObj[thatForeignKey] = thatObj.id;
+			//				result = thisObj.save();
+			//			}
+			//			break;
+			//		case HAS_ONE:
+			//			thatObj[thisForeignKey] = thisObj.id;
+			//			result = thatObj.save();
+			//			break;
+			//		case HAS_MANY:
+			//			for each (obj in property){
+			//				obj[thisForeignKey] = thisObj.id;
+			//				obj.save();
+			//			}
+			//			result = true;
+			//			break;
+			//		case MANY_TO_MANY:
+			//			var insStmt:SQLStatement = new SQLStatement();
+			//			insStmt.text = "INSERT OR REPLACE INTO " + joinTable + " (" + thisForeignKey + ", " + thatForeignKey + ") VALUES (?, ?)";
+			//			insStmt.parameters[1] = thisObj.id;
 						
-						for each (obj in property){
-							obj.save();
-							insStmt.parameters[2] = obj.id;
-							insStmt.execute();
-						}
-						result = true;
-						break;
-					default:
-						result = false;
-				}
+			//			for each (obj in property){
+			//				obj.save();
+			//				insStmt.parameters[2] = obj.id;
+			//				insStmt.execute();
+			//			}
+			//			result = true;
+			//			break;
+			//		default:
+			//			result = false;
+			//	}
 				
-				thisObj.connection.commit();
-			}catch(e:Error){
-				thisObj.connection.rollback();
-			}
+			//	thisObj.connection.commit();
+			//}catch(e:Error){
+			//	thisObj.connection.rollback();
+			//}
 			
-			return result;
+			//return result;
+			return null;
 		}
+
 		
 		//public function deleteRelated(conditions:String = null, conditionParams:Array = null, joinOnly:Boolean = true):uint
 		//{

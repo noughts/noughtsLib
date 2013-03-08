@@ -148,82 +148,61 @@
 		}
 
 
-		public function saveAll( data_vec:* ):void{
+		public function saveAllCommand( data_vec:* ):SerialList{
 			var self = this;
-			var conn:SQLConnection = DB.getConnection(defaultConnectionAlias);
-			var slist:SerialList = new SerialList();
-			slist.addCommand(
-				new Listen( conn, SQLEvent.OPEN ),
-				function(){
-					Logger.info( "SQLConnection OPENED" )
-					conn.begin()
-				},
-				new Listen( conn, SQLEvent.BEGIN ),
-				function(){
-					Logger.info( "SQLConnection transaction began" )
-
-				},
-			null);
 
 			// set up the variables to save this object to the database
 			var tableName:String = schemaTranslation.getTable(className);
 			var primaryKey:String = schemaTranslation.getPrimaryKey(className);
-			var data:Object = getDBProperties();
-			delete data[primaryKey];
-			var fields:Array = [];
-			for (var fieldName:String in data){
-				fields.push(fieldName);
-			}
-			var fieldsLength:uint = fields.length;
-			var fieldsJoined:String = fields.join(", ")
 
-			var len:uint = data_vec.length
-			for( var i:int=0; i<len; i++ ){
-				slist.addCommand(
-					new Var( "i", i ),
-					function(){
-						Logger.info( "statement execute" )
-						var i:uint = this.getVar( "i" )
-						var stmt:SQLStatement = new SQLStatement()
-						stmt.sqlConnection = conn;
-						var sql:String = "INSERT INTO " + tableName + " (" + fieldsJoined + ") VALUES (?";
-						for( var j:uint=0; j < fieldsLength-1; j++ ){
-							sql += ", ?";
-						}
-						sql += ")";
-						stmt.text = sql;
+			var data:Object
 
-						var data:Object = data_vec[i].getDBProperties();
-						delete data[primaryKey];
-						var counter:uint = 0
-						for (var fieldName:String in data){
-							stmt.parameters[counter] = data[fieldName];
-							counter++;
-						}
-						stmt.execute()
-						slist.insertCommand( new Listen( stmt, SQLEvent.RESULT ) )
-					},
-				null);
-			}
-
+			var slist:SerialList = new SerialList();
 			slist.addCommand(
+				new BeginTransaction( connection ),
+				getDBPropertiesCommand(),
 				function(){
-					Logger.info( "SQLConnection commit start..." )
+					data = this.latestData;
+
+					delete data[primaryKey];
+					var fields:Array = [];
+					for (var fieldName:String in data){
+						fields.push(fieldName);
+					}
+					var fieldsLength:uint = fields.length;
+					var fieldsJoined:String = fields.join(", ")
+
+					var len:uint = data_vec.length
+					for( var i:int=0; i<len; i++ ){
+						slist.addCommand(
+							new Var( "i", i ),
+							function(){
+								Logger.info( "statement execute" )
+								var i:uint = this.getVar( "i" )
+								var stmt:SQLStatement = new SQLStatement()
+								stmt.sqlConnection = connection;
+								var sql:String = "INSERT INTO " + tableName + " (" + fieldsJoined + ") VALUES (?";
+								for( var j:uint=0; j < fieldsLength-1; j++ ){
+									sql += ", ?";
+								}
+								sql += ")";
+								stmt.text = sql;
+
+								var data:Object = data_vec[i].getDBProperties();
+								delete data[primaryKey];
+								var counter:uint = 0
+								for (var fieldName:String in data){
+									stmt.parameters[counter] = data[fieldName];
+									counter++;
+								}
+								slist.insertCommand( new ExecuteStatement( stmt ) );
+							},
+						null);
+					}
 				},
-				conn.commit,
-				new Listen( conn, SQLEvent.COMMIT ),
-				function(){
-					Logger.info( "SQLConnection commit complete!!!" )
-					self.dispatchEvent( new Event(Event.COMPLETE) );
-				},
+				new CommitTransaction( connection ),
 			null);
-
-
-			slist.execute();
-			// 2回目以降は接続済みになるので、openedをdispatchする
-			if( conn.connected ){
-				conn.dispatchEvent( new SQLEvent(SQLEvent.OPEN) )
-			}
+			return slist;
 		}
 
 
@@ -233,13 +212,13 @@
 		 *
 		 * @return Whether the object successfully saved
 		 */
-		public function save():void{
+		public function saveCommand():SerialList{
 			// dispatch the saving event and allow for the save to be canceled
 			var savingEvent:ActiveRecordEvent = new ActiveRecordEvent(ActiveRecordEvent.SAVING, true);
 			dispatchEvent(savingEvent);
 
 			if (savingEvent.isDefaultPrevented())
-				return;
+				return null;
 
 			// add timestamps if certain "created" and/or "modified" fields are defined
 			if (!id && hasOwnProperty(schemaTranslation.getCreatedField()))
@@ -254,56 +233,48 @@
 			var parameters:Array = [];
 			var sql:String;
 
-			var data:Object = getDBProperties();
-			delete data[primaryKey];
-			var fields:Array = [];
-			for (var fieldName:String in data){
-				fields.push(fieldName);
-				parameters.push(data[fieldName]);
-			}
-
-			if (id) {
-				// this is an update statement
-				sql = "UPDATE " + tableName + " SET " + fields.join(" = ?, ") + " = ? WHERE " + primaryKey + " = ?";
-				parameters.push(id);
-			} else {
-				sql = "INSERT INTO " + tableName + " (" + fields.join(", ") + ") VALUES (?";
-				for (var j:uint = 0; j < fields.length - 1; j++)
-					sql += ", ?";
-				sql += ")";
-			}
+			var data:Object
 
 
 			var slist:SerialList = new SerialList();
 			slist.addCommand(
-				queryCommand( sql, parameters ),
+				getDBPropertiesCommand(),
+				function(){
+					data = this.latestData;
+
+					delete data[primaryKey];
+					var fields:Array = [];
+					for (var fieldName:String in data){
+						fields.push(fieldName);
+						parameters.push(data[fieldName]);
+					}
+
+					if (id) {
+						// this is an update statement
+						sql = "UPDATE " + tableName + " SET " + fields.join(" = ?, ") + " = ? WHERE " + primaryKey + " = ?";
+						parameters.push(id);
+					} else {
+						sql = "INSERT INTO " + tableName + " (" + fields.join(", ") + ") VALUES (?";
+						for (var j:uint = 0; j < fields.length - 1; j++)
+							sql += ", ?";
+						sql += ")";
+					}
+
+					slist.insertCommand( queryCommand( sql, parameters ) )
+				},
 				function(){
 					var result:Object = this.latestData;
 					if( !result ){
-						saveComplete_sig.dispatch( false )
+						slist.latestData = null;
 						return;
 					}
 					if( !id ){
 						id = connection.lastInsertRowID;
 					}
-					saveComplete_sig.dispatch( true )
+					slist.latestData = result;
 				},
 			null);
-			slist.execute();
-			
-			//var result:Object = query( sql, parameters );
-
-			//if (!result)
-			//	return false;
-
-			//if (!id)
-			//	id = connection.lastInsertRowID;
-
-			//// dispatch the save event
-			//var saveEvent:ActiveRecordEvent = new ActiveRecordEvent(ActiveRecordEvent.SAVE);
-			//dispatchEvent(saveEvent);
-
-			//return true;
+			return slist;
 		}
 
 		//////////// These are ideally static methods that would work with a subclass, however, since we
@@ -367,12 +338,19 @@
 		 * Creates new object, populates the attributes from the array,
 		 * saves it if it validates, and returns it
 		 */
-		public function create(properties:Object = null):ActiveRecord
-		{
+		// ActiveRecord を返します
+		public function createCommand(properties:Object = null):SerialList{
 			var obj:ActiveRecord = new constructor();
 			obj.setDBProperties(properties);
-			obj.save();
-			return obj;
+
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+				obj.saveCommand(),
+				function(){
+					slist.latestData = obj;
+				},
+			null);
+			return slist;
 		}
 
 		/**
@@ -427,12 +405,12 @@
 		 *
 		 * @return Number of successful deletes
 		 */
-		public function deleteAll(conditions:String = null, conditionParams:Array = null):void{
+		public function deleteAllCommand(conditions:String = null, conditionParams:Array = null):SerialList{
 			var tableName:String = schemaTranslation.getTable(className);
 
 			var sql:String = "DELETE FROM " + tableName;
 			sql += assembleQuery(conditions);
-			queryCommand( sql, conditionParams ).execute();
+			return queryCommand( sql, conditionParams );
 		}
 
 		/**
@@ -773,24 +751,26 @@
 		// SQLTableSchema を返す
 		sql_db function getSchemaCommand( tableName:String = null, updateTable:Boolean = false ):SerialList{
 			var self:ActiveRecord = this;
-			if (!tableName)
+			if (!tableName){
 				tableName = schemaTranslation.getTable(className);
+			}
+			var slist:SerialList = new SerialList();
 
-			if (tableName in tableSchemaCache)
-				return tableSchemaCache[tableName];
-
+			if (tableName in tableSchemaCache){
+				slist.latestData = tableSchemaCache[tableName];
+				return slist;
+			}
 
 			var schema:SQLSchemaResult
 			var table:SQLTableSchema;
 
-			var slist:SerialList = new SerialList();
 			slist.addCommand(
 				DB.getSchemaCommand( connection ),
 				function(){
 					schema = this.latestData;
 
 					// first, find the table this object represents
-					trace( "schema.tables", schema.tables )
+					//trace( "schema.tables", schema.tables )
 					if( schema ){
 						for each( var tmpTable:SQLTableSchema in schema.tables ){
 							if (tmpTable.name == tableName){
@@ -815,6 +795,7 @@
 
 					columnSchemaCache[tableName] = fields;
 					tableSchemaCache[tableName] = table;
+					trace(">>>>>>>>>>>>>>>>>>>>>>>", table)
 					slist.latestData = table;
 				},
 			null);
