@@ -33,6 +33,7 @@ package jp.noughts.progression.commands.db{
 		private function _executeFunction():void {
 			Logger.info( "ExecuteStatement 開始..." )
 			_statement.addEventListener( SQLEvent.RESULT, resultHandler );
+			_statement.addEventListener( SQLErrorEvent.ERROR, _onError );
 			_statement.execute();
 		}
 		
@@ -45,10 +46,14 @@ package jp.noughts.progression.commands.db{
 		    }
 		    _destroy();
 		    super.executeComplete();// 処理を終了する
-
 		}
 
 
+		private function _onError( e:SQLErrorEvent ):void{
+			Logger.info( "ExecuteStatement ERROR", _statement.text, e )
+			_destroy();
+			super.executeComplete();// 処理を終了する
+		}
 
 		
 		/**
@@ -64,6 +69,7 @@ package jp.noughts.progression.commands.db{
 		 */
 		private function _destroy():void {
 			_statement.removeEventListener( SQLEvent.RESULT, resultHandler );
+			_statement.removeEventListener( SQLErrorEvent.ERROR, _onError );
 		}
 		
 		/**

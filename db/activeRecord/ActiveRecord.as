@@ -172,13 +172,16 @@
 					var fieldsLength:uint = fields.length;
 					var fieldsJoined:String = fields.join(", ")
 
+					var slist2:SerialList = new SerialList();
+
 					var len:uint = data_vec.length
 					for( var i:int=0; i<len; i++ ){
-						slist.addCommand(
+						slist2.addCommand(
 							new Var( "i", i ),
 							function(){
 								Logger.info( "statement execute" )
 								var i:uint = this.getVar( "i" )
+
 								var stmt:SQLStatement = new SQLStatement()
 								stmt.sqlConnection = connection;
 								var sql:String = "INSERT INTO " + tableName + " (" + fieldsJoined + ") VALUES (?";
@@ -188,17 +191,17 @@
 								sql += ")";
 								stmt.text = sql;
 
-								var data:Object = data_vec[i].getDBProperties();
-								delete data[primaryKey];
 								var counter:uint = 0
 								for (var fieldName:String in data){
 									stmt.parameters[counter] = data[fieldName];
 									counter++;
 								}
-								slist.insertCommand( new ExecuteStatement( stmt ) );
+								slist2.insertCommand( new ExecuteStatement( stmt ) );
 							},
+
 						null);
 					}
+					slist.insertCommand( slist2 )
 				},
 				new CommitTransaction( connection ),
 			null);
