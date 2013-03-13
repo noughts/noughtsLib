@@ -72,6 +72,7 @@
 			if( defaultConnection ){
 				connection = defaultConnection
 			} else {
+				trace( "!!!!!!defaultConnectionがないので新規コネクションを作成します" )
 				connection = DB.getConnection( defaultConnectionAlias );
 			}
 		}
@@ -163,6 +164,7 @@
 				getDBPropertiesCommand(),
 				function(){
 					data = this.latestData;
+					//Logger.info( "!!!!!!!!!!!!!!",ObjectUtil.toString(data) )
 
 					delete data[primaryKey];
 					var fields:Array = [];
@@ -179,7 +181,7 @@
 						slist2.addCommand(
 							new Var( "i", i ),
 							function(){
-								Logger.info( "statement execute" )
+								//Logger.info( "statement execute" )
 								var i:uint = this.getVar( "i" )
 
 								var stmt:SQLStatement = new SQLStatement()
@@ -204,6 +206,7 @@
 					slist.insertCommand( slist2 )
 				},
 				new CommitTransaction( connection ),
+				"ActiveRecord saveAllCommand complete",
 			null);
 			return slist;
 		}
@@ -715,11 +718,11 @@
 		//	return data;
 		//}
 
-		// Objectを返す
+		// Object を返す
 		sql_db function getDBPropertiesCommand():SerialList{
 			var tableName:String = schemaTranslation.getTable(className);
 			var columns:Array
-
+			var self = this;
 			var slist:SerialList = new SerialList();
 			slist.addCommand(
 				getSchemaCommand(),
@@ -729,10 +732,10 @@
 
 					var data:Object = {};
 					for each (var column:SQLColumnSchema in columns){
-						if (column.primaryKey){
+						if( column.primaryKey ){
 							data[column.name] = id;
-						} else if (column.name in this){
-							data[column.name] = this[column.name];
+						} else if( column.name in self ){
+							data[column.name] = self[column.name];
 						}
 					}
 					slist.latestData = data;
@@ -798,7 +801,7 @@
 
 					columnSchemaCache[tableName] = fields;
 					tableSchemaCache[tableName] = table;
-					trace(">>>>>>>>>>>>>>>>>>>>>>>", table)
+					//trace(">>>>>>>>>>>>>>>>>>>>>>>", table)
 					slist.latestData = table;
 				},
 			null);
