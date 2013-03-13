@@ -37,7 +37,7 @@ package jp.noughts.progression.commands.db{
 		 * 実行されるコマンドの実装です。
 		 */
 		private function _executeFunction():void {
-			//Logger.info( "ExecuteStatement 開始..." )
+			//Logger.info( "ExecuteStatement 開始...", _statement.text, ObjectUtil.toString(_statement.parameters) )
 			_statement.addEventListener( SQLEvent.RESULT, resultHandler );
 			_statement.addEventListener( SQLErrorEvent.ERROR, _onError );
 			_statement.execute();

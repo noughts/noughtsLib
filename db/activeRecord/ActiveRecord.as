@@ -193,9 +193,12 @@
 								sql += ")";
 								stmt.text = sql;
 
+								var rowData = data_vec[i]
+								delete rowData[primaryKey];
+
 								var counter:uint = 0
 								for (var fieldName:String in data){
-									stmt.parameters[counter] = data[fieldName];
+									stmt.parameters[counter] = rowData[fieldName];
 									counter++;
 								}
 								slist2.insertCommand( new ExecuteStatement( stmt ) );
@@ -754,7 +757,7 @@
 				new ExecuteStatement( stmt ),
 				function(){
 					var result:SQLResult = this.latestData;
-					slist.latestData = result.data;
+					slist.latestData = result ? result.data : null;
 				},
 			null);
 			return slist;
