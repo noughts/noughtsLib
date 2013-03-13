@@ -292,43 +292,101 @@
 		 *
 		 * @param The id of the object in the database
 		 */
-		public function find(id:uint):ActiveRecord
-		{
+		//public function find(id:uint):ActiveRecord{
+		//	var primaryKey:String = schemaTranslation.getPrimaryKey(className);
+		//	var result:Array = findAll(primaryKey + " = ?", [id]);
+		//	return result ? result[0] : null;
+		//}
+
+		// ActiveRecord を返します。
+		public function findCommand(id:uint):SerialList{
 			var primaryKey:String = schemaTranslation.getPrimaryKey(className);
-			var result:Array = findAll(primaryKey + " = ?", [id]);
-			return result ? result[0] : null;
+
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+				findAllCommand( primaryKey + " = ?", [id] ),
+				function(){
+					var result:Array = this.latestData;
+					slist.latestData = result ? result[0] : null;
+				},
+			null);
+			return slist
 		}
 
 		/**
 		 * Returns first object found based on parameters
 		 */
-		 public function findFirst(conditions:String = null, conditionParams:Array = null, order:String = null):ActiveRecord
-		 {
-		 	var result:Array = findAll(conditions, conditionParams, order, 1);
-			return result ? result[0] : null;
-		 }
+		 //public function findFirst(conditions:String = null, conditionParams:Array = null, order:String = null):ActiveRecord{
+		 //	var result:Array = findAll(conditions, conditionParams, order, 1);
+			//return result ? result[0] : null;
+		 //}
+
+		 // ActiveRecord を返す
+		public function findFirstCommand(conditions:String = null, conditionParams:Array = null, order:String = null):SerialList{
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+                 "ActiveRecord findFirstCommand",
+				findAllCommand( conditions, conditionParams, order, 1 ),
+				function(){
+					var result:Array = this.latestData;
+					slist.latestData = result ? result[0] : null;
+				},
+			null);
+			return slist
+		}
 
 		/**
 		 * Returns array of objects based on parameters
 		 */
-		public function findAll(conditions:String = null, conditionParams:Array = null, order:String = null, limit:uint = 0, offset:uint = 0, joins:String = null):Array
-		{
+		//public function findAll(conditions:String = null, conditionParams:Array = null, order:String = null, limit:uint = 0, offset:uint = 0, joins:String = null):Array{
+		//	var tableName:String = schemaTranslation.getTable(className);
+		//	var primaryKey:String = schemaTranslation.getPrimaryKey(className);
+
+		//	var sql:String = "SELECT *, " + tableName + "." + primaryKey + " FROM " + tableName;
+		//	sql += assembleQuery(conditions, order, limit, offset, joins);
+
+		//	var items:Array = loadItems(constructor as Class, sql, conditionParams);
+		//	return (items == null ? [] : items);
+		//}
+
+		// Array を返す
+		public function findAllCommand( conditions:String=null, conditionParams:Array=null, order:String=null, limit:uint=0, offset:uint=0, joins:String=null):SerialList{
 			var tableName:String = schemaTranslation.getTable(className);
 			var primaryKey:String = schemaTranslation.getPrimaryKey(className);
 
 			var sql:String = "SELECT *, " + tableName + "." + primaryKey + " FROM " + tableName;
 			sql += assembleQuery(conditions, order, limit, offset, joins);
 
-			var items:Array = loadItems(constructor as Class, sql, conditionParams);
-			return (items == null ? [] : items);
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+                "ActiveRecord findAllCommand",
+				loadItemsCommand( constructor as Class, sql, conditionParams ),
+				function(){
+					var items:Array = this.latestData;
+					slist.latestData = (items == null ? [] : items)
+				},
+			null);
+			return slist;
 		}
+
+
 
 		/**
 		 * Returns array of objects based on the full sql statement
 		 */
-		public function findBySQL(sql:String, ...params:Array):Array
-		{
-			return loadItems(constructor as Class, sql, params);
+		//public function findBySQL(sql:String, ...params:Array):Array{
+		//	return loadItems(constructor as Class, sql, params);
+		//}
+
+		public function findBySQLCommand(sql:String, ...params:Array):SerialList{
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+				loadItemsCommand( constructor as Class, sql, params ),
+				function(){
+					slist.latestData = this.latestData;
+				},
+			null);
+			return slist
 		}
 
 		/**
@@ -476,20 +534,20 @@
 		}
 
 
-		flash_proxy override function getProperty(name:*):*
-		{
-			var property:String = name.toString();
+		//flash_proxy override function getProperty(name:*):*{
+		//	var property:String = name.toString();
 
-			var relation:XML = Reflection.getMetadata(this, "RelatedTo").arg.(@key == "name" && @value == property).parent();
+		//	var relation:XML = Reflection.getMetadata(this, "RelatedTo").arg.(@key == "name" && @value == property).parent();
 
-			if (!relation || property in relatedData)
-				return relatedData[property];
+		//	if (!relation || property in relatedData){
+		//		return relatedData[property];
+		//	}
 
-			var type:Class = getDefinitionByName(relation.arg.(@key == "className").@value) as Class;
-			var multiple:Boolean = relation.arg.(@key == "" && @value == "multiple").length();
-			relatedData[property] = loadRelated(type, multiple);
-			return relatedData[property];
-		}
+		//	var type:Class = getDefinitionByName(relation.arg.(@key == "className").@value) as Class;
+		//	var multiple:Boolean = relation.arg.(@key == "" && @value == "multiple").length();
+		//	relatedData[property] = loadRelated(type, multiple);
+		//	return relatedData[property];
+		//}
 
 		flash_proxy override function hasProperty(name:*):Boolean
 		{
@@ -501,8 +559,7 @@
 		}
 
 
-		flash_proxy override function callProperty(name:*, ...params:Array):*
-		{
+		flash_proxy override function callProperty(name:*, ...params:Array):*{
 			var matches:Array = name.toString().match(/^([a-z]+)(.+)/);
 			var prop:QName = new QName(sql_db, matches[1] + "Related");
 			if (!matches || !(this[prop] is Function) )
@@ -518,21 +575,36 @@
 			var type:Class = getDefinitionByName(relation.arg.(@key == "className").@value) as Class;
 			var multiple:Boolean = relation.arg.(@key == "" && @value == "multiple").length();
 
-			if (relationalMethod == saveRelated)
+			if (relationalMethod == saveRelated){
 				params.unshift(this[propertyName]);
+			}
 			params.unshift(multiple);
 			params.unshift(type);
 
-			if (relationalMethod == loadRelated)
+			throw new Error( "loadRelated を loadRelatedCommand に変更したのであやしい" );
+			if (relationalMethod == loadRelatedCommand){
 				return relatedData[name] = relationalMethod.apply(this, params);
-			else
+			} else {
 				return relationalMethod.apply(this, params);
+			}
 		}
 
 
-		sql_db function loadRelated(clazz:Class, multiple:Boolean = false, conditions:String = null, conditionParams:Array = null, order:String = null, limit:uint = 0, offset:uint = 0):Object{
+		//sql_db function loadRelated(clazz:Class, multiple:Boolean = false, conditions:String = null, conditionParams:Array = null, order:String = null, limit:uint = 0, offset:uint = 0):Object{
+		//	var r:RelationalOperation = new RelationalOperation(this, clazz, multiple);
+		//	return r.loadRelated(conditions, conditionParams, order, limit, offset);
+		//}
+		sql_db function loadRelatedCommand(clazz:Class, multiple:Boolean = false, conditions:String = null, conditionParams:Array = null, order:String = null, limit:uint = 0, offset:uint = 0):SerialList{
 			var r:RelationalOperation = new RelationalOperation(this, clazz, multiple);
-			return r.loadRelated(conditions, conditionParams, order, limit, offset);
+
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+				r.loadRelatedCommand(conditions, conditionParams, order, limit, offset),
+				function(){
+					slist.latestData = this.latestData;
+				},
+			null);
+			return slist;
 		}
 
 		//sql_db function countRelated(clazz:Class, multiple:Boolean = false, conditions:String = null, conditionParams:Array = null):uint{
@@ -637,7 +709,30 @@
 		}
 
 
-		sql_db function loadItems(clazz:Class, sql:String, ...params:Array):Array{
+		//sql_db function loadItems(clazz:Class, sql:String, ...params:Array):Array{
+		//	var stmt:SQLStatement = new SQLStatement();
+		//	stmt.sqlConnection = connection;
+		//	stmt.text = sql;
+		//	stmt.itemClass = clazz;
+
+		//	if (params.length == 1 && params[0] is Array){
+		//		params = params[0];
+		//	}
+
+		//	for (var i:int = 0; i < params.length; i++){
+		//		if( params[i] ){
+		//			stmt.parameters[i] = params[i];
+		//		}
+		//	}
+
+		//	stmt.execute();
+		//	var result:SQLResult = stmt.getResult();
+
+		//	return result ? result.data : null;
+		//}
+
+		// Array を返す
+		sql_db function loadItemsCommand(clazz:Class, sql:String, ...params:Array):SerialList{
 			var stmt:SQLStatement = new SQLStatement();
 			stmt.sqlConnection = connection;
 			stmt.text = sql;
@@ -653,10 +748,16 @@
 				}
 			}
 
-			stmt.execute();
-			var result:SQLResult = stmt.getResult();
-
-			return result ? result.data : null;
+			var slist:SerialList = new SerialList();
+			slist.addCommand(
+				"ActiveRecord loadItemsCommand",
+				new ExecuteStatement( stmt ),
+				function(){
+					var result:SQLResult = this.latestData;
+					slist.latestData = result.data;
+				},
+			null);
+			return slist;
 		}
 
 		sql_db function assembleQuery(conditions:String = null, order:String = null, limit:uint = 0, offset:uint = 0, joins:String = null):String{

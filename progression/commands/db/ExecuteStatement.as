@@ -1,3 +1,9 @@
+/*
+
+latestDate の型は SQLResult です。
+
+*/
+
 package jp.noughts.progression.commands.db{
 	import flash.errors.*;
 	import flash.net.*;
@@ -31,7 +37,7 @@ package jp.noughts.progression.commands.db{
 		 * 実行されるコマンドの実装です。
 		 */
 		private function _executeFunction():void {
-			Logger.info( "ExecuteStatement 開始..." )
+			//Logger.info( "ExecuteStatement 開始..." )
 			_statement.addEventListener( SQLEvent.RESULT, resultHandler );
 			_statement.addEventListener( SQLErrorEvent.ERROR, _onError );
 			_statement.execute();
@@ -39,7 +45,7 @@ package jp.noughts.progression.commands.db{
 		
 
 		private function resultHandler( event:SQLEvent ):void{
-			Logger.info( "ExecuteStatement 終了" )
+			//Logger.info( "ExecuteStatement 終了" )
 		    var result:SQLResult = _statement.getResult();
 		    if( result != null ){
 				latestData = result;
