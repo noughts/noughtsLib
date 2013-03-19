@@ -67,6 +67,8 @@ package jp.noughts.media{
 			this.movieDesc.w = frameWidth;
 			this.movieDesc.h = frameHeight;
 			this.movieDesc.fps = fps;
+
+			builder.open( file , FileMode.WRITE );
 		}
 
 
@@ -167,24 +169,25 @@ package jp.noughts.media{
 		private function build( onFinish:Function ):void{
 			Logger.info( "動画ビルド開始" )
 			appendStruct( avi );
+			builder.close();
 			
-			if( file ){
-				Logger.info( "動画を書き出します" )
-				var fs:FileStream = new FileStream();
-				fs.open( file, FileMode.WRITE );
-				fs.writeBytes( builder )
-				fs.close();
-				Logger.info( "動画書き出し完了" )
-			} else {
-				trace( "fileを指定してください。" )
-			}
+			//if( file ){
+			//	Logger.info( "動画を書き出します" )
+			//	var fs:FileStream = new FileStream();
+			//	fs.open( file, FileMode.WRITE );
+			//	fs.writeBytes( builder )
+			//	fs.close();
+			//	Logger.info( "動画書き出し完了" )
+			//} else {
+			//	trace( "fileを指定してください。" )
+			//}
 		}
 
 
 		public function addVideoStreamData( frameBuffer:ByteArray ):int{
 			var stream:MoviStream = new MoviStream();
 			stream.dwSize = frameBuffer.length;
-			stream.handler = function(bb) {
+			stream.handler = function( bb:BlobBuilder ){
 				//bb.append(frameBuffer);
 				bb.writeBytes( frameBuffer )
 			};
@@ -285,7 +288,7 @@ package jp.noughts.media{
 	}
 }
 
-
+import flash.filesystem.*;
 import flash.events.*;import flash.display.*;import flash.system.*;import flash.utils.*;import flash.net.*;import flash.media.*;import flash.geom.*;import flash.text.*;import flash.media.*;import flash.system.*;import flash.ui.*;import flash.external.ExternalInterface;import flash.filters.*;
 class ArrayBuffer extends ByteArray{
 	public function ArrayBuffer( length:uint ){
@@ -300,11 +303,15 @@ class Uint8Array{
 	}
 }
 
-class BlobBuilder extends ByteArray{
+
+
+
+class BlobBuilder extends FileStream{
 	public function BlobBuilder(){
 	}
 
-	public function append( ab:* ){
+
+	public function append( ab:* ):void{
 		trace( "append: "+ ab )
 	}
 
