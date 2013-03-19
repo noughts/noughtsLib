@@ -1,7 +1,8 @@
 package jp.noughts.db.activeRecord
 {
 	import jp.noughts.db.sql_db;
-	
+	import jp.progression.casts.*;	import jp.progression.commands.display.*;	import jp.progression.commands.lists.*;	import jp.progression.commands.managers.*;	import jp.progression.commands.media.*;	import jp.progression.commands.net.*;	import jp.progression.commands.tweens.*;	import jp.progression.commands.*;	import jp.progression.config.*;	import jp.progression.data.*;	import jp.progression.debug.*;	import jp.progression.events.*;	import jp.progression.scenes.*;	import jp.nium.core.debug.Logger;
+
 	import flash.data.SQLStatement;
 	
 	use namespace sql_db;
@@ -102,25 +103,53 @@ package jp.noughts.db.activeRecord
 			}
 		}
 		
-		public function loadRelated(conditions:String = null, conditionParams:Array = null, order:String = null, limit:uint = 0, offset:uint = 0):Object
-		{
-			switch (relationship)
-			{
+		//public function loadRelated(conditions:String = null, conditionParams:Array = null, order:String = null, limit:uint = 0, offset:uint = 0):Object
+		//{
+		//	switch (relationship)
+		//	{
+		//		case BELONGS_TO:
+		//			return thatObj.findFirst(thatPrimaryKey + " = ?", [thisObj[thatForeignKey]]);
+		//		case HAS_ONE:
+		//			cond = mergeConditions(conditions, conditionParams, thisForeignKey + " = ?", [thisObj.id]);
+		//			return thatObj.findFirst(cond.conditions, cond.params, order);
+		//		case HAS_MANY:
+		//			cond = mergeConditions(conditions, conditionParams, thisForeignKey + " = ?", [thisObj.id]);
+		//			return thatObj.findAll(cond.conditions, cond.params, order, limit, offset);
+		//		case MANY_TO_MANY:
+		//			cond = mergeConditions(conditions, conditionParams, joinTable + "." + thisForeignKey + " = ?", [thisObj.id]);
+		//			return thatObj.findAll(cond.conditions, cond.params, order, limit, offset, joins);
+		//		default:
+		//			return null;
+		//	}
+		//}
+
+		public function loadRelatedCommand(conditions:String=null, conditionParams:Array=null, order:String=null, limit:uint=0, offset:uint=0):SerialList{
+			var slist:SerialList = new SerialList();
+			
+			switch (relationship){
 				case BELONGS_TO:
-					return thatObj.findFirst(thatPrimaryKey + " = ?", [thisObj[thatForeignKey]]);
+					slist.addCommand( thatObj.findFirstCommand(thatPrimaryKey + " = ?", [thisObj[thatForeignKey]]) );
 				case HAS_ONE:
 					cond = mergeConditions(conditions, conditionParams, thisForeignKey + " = ?", [thisObj.id]);
-					return thatObj.findFirst(cond.conditions, cond.params, order);
+					slist.addCommand( thatObj.findFirstCommand(cond.conditions, cond.params, order) );
 				case HAS_MANY:
 					cond = mergeConditions(conditions, conditionParams, thisForeignKey + " = ?", [thisObj.id]);
-					return thatObj.findAll(cond.conditions, cond.params, order, limit, offset);
+					slist.addCommand( thatObj.findAllCommand(cond.conditions, cond.params, order, limit, offset) );
 				case MANY_TO_MANY:
 					cond = mergeConditions(conditions, conditionParams, joinTable + "." + thisForeignKey + " = ?", [thisObj.id]);
-					return thatObj.findAll(cond.conditions, cond.params, order, limit, offset, joins);
-				default:
-					return null;
+					slist.addCommand( thatObj.findAllCommand(cond.conditions, cond.params, order, limit, offset, joins) );
 			}
+
+			slist.addCommand(
+				function(){
+					var result:Object = this.latestData;
+					slist.latestData = result;
+				}
+			);
+
+			return slist;
 		}
+
 		
 		//public function countRelated(conditions:String = null, conditionParams:Array = null):uint{
 		//	switch (relationship){
@@ -141,61 +170,63 @@ package jp.noughts.db.activeRecord
 		//}
 		
 		public function saveRelated(property:Object = null):Boolean{
-			if (!property) return false;
+			//if (!property) return false;
 			
-			if (property is ActiveRecord)
-				thatObj = property as ActiveRecord;
+			//if (property is ActiveRecord)
+			//	thatObj = property as ActiveRecord;
 			
-			var obj:ActiveRecord;
-			var result:Boolean;
-			thisObj.connection.begin();
+			//var obj:ActiveRecord;
+			//var result:Boolean;
+			//thisObj.connection.begin();
 			
-			if (relationship != BELONGS_TO && !thisObj.id)
-				thisObj.save();
+			//if (relationship != BELONGS_TO && !thisObj.id)
+			//	thisObj.save();
 			
-			try{
-				switch (relationship){
-					case BELONGS_TO:
-						if (property is ActiveRecord){
-							thatObj.save();
-							thisObj[thatForeignKey] = thatObj.id;
-							result = thisObj.save();
-						}
-						break;
-					case HAS_ONE:
-						thatObj[thisForeignKey] = thisObj.id;
-						result = thatObj.save();
-						break;
-					case HAS_MANY:
-						for each (obj in property){
-							obj[thisForeignKey] = thisObj.id;
-							obj.save();
-						}
-						result = true;
-						break;
-					case MANY_TO_MANY:
-						var insStmt:SQLStatement = new SQLStatement();
-						insStmt.text = "INSERT OR REPLACE INTO " + joinTable + " (" + thisForeignKey + ", " + thatForeignKey + ") VALUES (?, ?)";
-						insStmt.parameters[1] = thisObj.id;
+			//try{
+			//	switch (relationship){
+			//		case BELONGS_TO:
+			//			if (property is ActiveRecord){
+			//				thatObj.save();
+			//				thisObj[thatForeignKey] = thatObj.id;
+			//				result = thisObj.save();
+			//			}
+			//			break;
+			//		case HAS_ONE:
+			//			thatObj[thisForeignKey] = thisObj.id;
+			//			result = thatObj.save();
+			//			break;
+			//		case HAS_MANY:
+			//			for each (obj in property){
+			//				obj[thisForeignKey] = thisObj.id;
+			//				obj.save();
+			//			}
+			//			result = true;
+			//			break;
+			//		case MANY_TO_MANY:
+			//			var insStmt:SQLStatement = new SQLStatement();
+			//			insStmt.text = "INSERT OR REPLACE INTO " + joinTable + " (" + thisForeignKey + ", " + thatForeignKey + ") VALUES (?, ?)";
+			//			insStmt.parameters[1] = thisObj.id;
 						
-						for each (obj in property){
-							obj.save();
-							insStmt.parameters[2] = obj.id;
-							insStmt.execute();
-						}
-						result = true;
-						break;
-					default:
-						result = false;
-				}
+			//			for each (obj in property){
+			//				obj.save();
+			//				insStmt.parameters[2] = obj.id;
+			//				insStmt.execute();
+			//			}
+			//			result = true;
+			//			break;
+			//		default:
+			//			result = false;
+			//	}
 				
-				thisObj.connection.commit();
-			}catch(e:Error){
-				thisObj.connection.rollback();
-			}
+			//	thisObj.connection.commit();
+			//}catch(e:Error){
+			//	thisObj.connection.rollback();
+			//}
 			
-			return result;
+			//return result;
+			return null;
 		}
+
 		
 		//public function deleteRelated(conditions:String = null, conditionParams:Array = null, joinOnly:Boolean = true):uint
 		//{

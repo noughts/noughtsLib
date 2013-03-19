@@ -72,7 +72,6 @@
 								}
 							}
 						}
-						trace("begin前チェック", obj.connection.inTransaction)
 						var slist2:SerialList = new SerialList();
 						slist2.addCommand( new BeginTransaction(obj.connection) );
 
@@ -116,13 +115,7 @@
 						}
 						slist.insertCommand( slist2 )
 					},
-					1,
-					function(){
-						trace("コミット前チェック", obj.connection.inTransaction)
-						if (obj.connection.inTransaction){
-							obj.connection.commit();
-						}
-					},
+					new CommitTransaction( obj.connection ),
 					"updateTable終了",
 				null);
 			}

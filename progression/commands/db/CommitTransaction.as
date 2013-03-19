@@ -3,6 +3,7 @@ package jp.noughts.progression.commands.db{
 	import flash.net.*;
 	import flash.events.*;
 	import flash.utils.*;
+	import flash.display.*;
 	import jp.progression.commands.*;
 	import jp.nium.core.debug.Logger;
 	//import jp.nium.utils.ObjectUtil;
@@ -17,6 +18,8 @@ package jp.noughts.progression.commands.db{
 	public class CommitTransaction extends Command {
 		
 		private var _connection:SQLConnection;
+		private var _juggler:Sprite = new Sprite();
+
 
 				
 		public function CommitTransaction( connection:SQLConnection ){
@@ -32,13 +35,40 @@ package jp.noughts.progression.commands.db{
 		 */
 		private function _executeFunction():void {
 			Logger.info( "CommitTransaction 開始..." )
-			_connection.addEventListener( SQLEvent.COMMIT, _onCommitComplete );
-			_connection.commit();
+			if( _connection.inTransaction ){
+				_commitTransaction()
+			} else {
+				trace( "CommitTransaction 他のトランザクションが終了するのを待ちます" );
+				_juggler.addEventListener( Event.ENTER_FRAME, _onEnterFrame );
+			}
+
 		}
 		
 
+
+		// ループして他のトランザクションの終了を待つ
+		private function _onEnterFrame( e:Event ):void{
+			if( _connection.inTransaction ){
+				trace( "CommitTransaction 他のトランザクションが終了するのを待っています..." );
+			} else {
+				_juggler.removeEventListener( Event.ENTER_FRAME, _onEnterFrame );
+				_commitTransaction()
+			}
+		}
+
+
+		private function _commitTransaction():void{
+			Logger.info( "CommitTransaction コミットを開始します..." )
+			_juggler.removeEventListener( Event.ENTER_FRAME, _onEnterFrame );
+			_connection.addEventListener( SQLEvent.COMMIT, _onCommitComplete );
+			_connection.commit();
+		}
+
+
+
+
 		private function _onCommitComplete( e:SQLEvent ):void{
-			Logger.info( "CommitTransaction 終了" )
+			Logger.info( "CommitTransaction コミット完了!" )
 			_destroy();
 			super.executeComplete();// 処理を終了する
 		}
