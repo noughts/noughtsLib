@@ -122,7 +122,7 @@ package jp.noughts.cocoafish.sdk {
 			if(appKey != null) {
 				//append session id
 				if(this.sessionId != null) {
-					reqURL += Constants.PARAMETER_DELIMITER + Constants.SESSION_ID + Constants.PARAMETER_EQUAL + this.sessionId;
+					//reqURL += Constants.PARAMETER_DELIMITER + Constants.SESSION_ID + Constants.PARAMETER_EQUAL + this.sessionId;
 				}
 				request = new URLRequest(reqURL);
 			} else if(consumer != null) {
@@ -146,7 +146,7 @@ package jp.noughts.cocoafish.sdk {
 				//append session id
 				if(this.sessionId != null) {
 					if(request.url.indexOf(Constants.SESSION_ID) == -1) {
-						request.url += Constants.PARAMETER_DELIMITER + Constants.SESSION_ID + Constants.PARAMETER_EQUAL + this.sessionId;
+						//request.url += Constants.PARAMETER_DELIMITER + Constants.SESSION_ID + Constants.PARAMETER_EQUAL + this.sessionId;
 					}
 				}
 				/*
@@ -197,15 +197,15 @@ package jp.noughts.cocoafish.sdk {
 				loader.dataFormat = URLLoaderDataFormat.TEXT;
 				
 				//append session id
-				if(this.sessionId != null) {
-					if(request.url.indexOf(Constants.SESSION_ID) == -1) {
-						if(request.url.indexOf(Constants.PARAMETER_QUESTION) != -1) {
-							request.url += Constants.PARAMETER_DELIMITER + Constants.SESSION_ID + Constants.PARAMETER_EQUAL + this.sessionId;
-						} else {
-							request.url += Constants.PARAMETER_QUESTION + Constants.SESSION_ID + Constants.PARAMETER_EQUAL + this.sessionId;
-						}
-					}
-				}
+				//if(this.sessionId != null) {
+				//	if(request.url.indexOf(Constants.SESSION_ID) == -1) {
+				//		if(request.url.indexOf(Constants.PARAMETER_QUESTION) != -1) {
+				//			request.url += Constants.PARAMETER_DELIMITER + Constants.SESSION_ID + Constants.PARAMETER_EQUAL + this.sessionId;
+				//		} else {
+				//			request.url += Constants.PARAMETER_QUESTION + Constants.SESSION_ID + Constants.PARAMETER_EQUAL + this.sessionId;
+				//		}
+				//	}
+				//}
 				
 				//Request complete
 				loader.addEventListener(Event.COMPLETE, function():void{
