@@ -74,6 +74,10 @@ package jp.noughts.display{
 		public function update():void{
 			this.removeChildren()
 
+			if( _text=="" || _text==null ){
+				return
+			}
+
 			var viewPort:Rectangle = new Rectangle( 0, 0, _width, 1024 )
 			multilineStageText.viewPort = viewPort;
 			multilineStageText.text = _text
